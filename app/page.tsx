@@ -31,7 +31,11 @@ export default function Home() {
           "Content-Type": "application/json",
           Authorization: authHeader,
         },
-        body: JSON.stringify({ task: selectedTask?.id, prompt }),
+        body: JSON.stringify({
+          task: selectedTask?.id,
+          prompt,
+          basePrompt: selectedTask?.basePrompt,
+        }),
       });
       if (!response.ok) throw new Error("Failed to generate content");
       const data: ApiResponse = await response.json();

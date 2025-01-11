@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { task, prompt } = await request.json();
+    const { task, prompt, basePrompt } = await request.json();
     const { apiKey, assistantName } = await checkAssistantPrerequisites();
 
     if (!apiKey || !assistantName) {
@@ -29,6 +29,10 @@ export async function POST(request: Request) {
       );
     }
 
+    const fullPrompt = basePrompt
+      ? `[Base Prompt]\n${basePrompt}\n\n[User Query]\n${prompt}`
+      : prompt;
+
     const chatResponse = await fetch(
       `https://prod-1-data.ke.pinecone.io/assistant/chat/${assistantName}`,
       {
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
           messages: [
             {
               role: "user",
-              content: `${task}: ${prompt}`,
+              content: fullPrompt,
             },
           ],
           stream: false,
