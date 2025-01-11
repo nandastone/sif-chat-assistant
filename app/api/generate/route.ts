@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import type { ApiResponse } from "../../utils/types";
 import { checkAssistantPrerequisites } from "../../utils/assistantUtils";
+import { verifyAuth } from "../../utils/authUtils";
 
 export async function POST(request: Request) {
   try {
+    const authHeader = request.headers.get("authorization");
+    if (!verifyAuth(authHeader)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { task, prompt } = await request.json();
     const { apiKey, assistantName } = await checkAssistantPrerequisites();
 
