@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { ApiResponse, ChatMessage, Citation } from "./types";
-import { getAuthHeader } from "./auth-utils";
+import { ChatMessage, Citation } from "../app/utils/types";
+import { getAuthHeader } from "../app/utils/auth-utils";
+import * as Sentry from "@sentry/nextjs";
 
 interface UsePineconeStreamOptions {
   onStart?: () => void;
   onFinish?: () => void;
   onError?: (error: Error) => void;
 }
+
+const TIMEOUT_MS = 60 * 1000; // 60 seconds
 
 export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +29,32 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
     setIsStreaming(true);
     setError(null);
 
+    let timeoutId: NodeJS.Timeout | undefined;
+    let lastChunkTime = Date.now();
+    let hasEndMessage = false;
+
+    const checkTimeout = () => {
+      const timeSinceLastChunk = Date.now() - lastChunkTime;
+      if (timeSinceLastChunk >= TIMEOUT_MS) {
+        const error = new Error(
+          `Response timeout after ${timeSinceLastChunk}ms`
+        );
+        Sentry.captureException(error, {
+          tags: {
+            task: requestData.task,
+            timeout_ms: TIMEOUT_MS,
+            time_since_last_chunk: timeSinceLastChunk,
+            has_end_message: hasEndMessage,
+          },
+        });
+        throw error;
+      }
+      timeoutId = setTimeout(checkTimeout, 1000); // Check every second
+    };
+
     try {
+      timeoutId = setTimeout(checkTimeout, 1000);
+
       const authHeader = await getAuthHeader();
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -56,9 +84,20 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
           if (!hasReceivedData) {
             throw new Error("Stream ended without receiving any data");
           }
+          if (!hasEndMessage) {
+            const error = new Error("Stream ended without message_end");
+            Sentry.captureException(error, {
+              tags: {
+                task: requestData.task,
+                has_end_message: false,
+              },
+            });
+            throw error;
+          }
           break;
         }
 
+        lastChunkTime = Date.now();
         const chunk = decoder.decode(value);
         buffer += chunk;
         const lines = buffer.split("\n");
@@ -71,6 +110,10 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
 
             const jsonStr = trimmedLine.slice("data:".length);
             const data = JSON.parse(jsonStr);
+
+            if (data.type === "message_end") {
+              hasEndMessage = true;
+            }
 
             if (!hasReceivedData) {
               hasReceivedData = true;
@@ -109,6 +152,7 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
       setError(errorMessage);
       options.onError?.(err instanceof Error ? err : new Error(errorMessage));
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setIsLoading(false);
       setIsStreaming(false);
       options.onFinish?.();

@@ -5,7 +5,7 @@ import PromptInput from "@/app/components/PromptInput";
 import ResultsDisplay from "@/app/components/ResultsDisplay";
 import { ApiResponse } from "@/app/utils/types";
 import { TASKS } from "@/app/utils/config";
-import { usePineconeStream } from "@/app/utils/hooks";
+import { usePineconeStream } from "@/hooks/use-pinecone-stream";
 
 export default function ArticlePage() {
   const [results, setResults] = useState<ApiResponse>({

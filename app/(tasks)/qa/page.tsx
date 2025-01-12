@@ -5,7 +5,7 @@ import { ChatMessage, Citation } from "@/app/utils/types";
 import { TASKS } from "@/app/utils/config";
 import { useChatStore } from "@/app/utils/store";
 import { Button } from "@/components/ui/button";
-import { usePineconeStream } from "@/app/utils/hooks";
+import { usePineconeStream } from "@/hooks/use-pinecone-stream";
 
 export default function QAPage() {
   const { messages, setMessages, clearMessages } = useChatStore();
