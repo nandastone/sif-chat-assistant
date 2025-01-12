@@ -5,6 +5,7 @@ import TaskSelector from "./components/TaskSelector";
 import PromptInput from "./components/PromptInput";
 import ResultsDisplay from "./components/ResultsDisplay";
 import ChatInterface from "./components/ChatInterface";
+import Footer from "./components/Footer";
 import { Task, ApiResponse, ChatMessage } from "./utils/types";
 import { TASKS } from "./utils/config";
 import { getAuthHeader } from "./utils/auth-utils";
@@ -104,40 +105,44 @@ export default function Home() {
   };
 
   return (
-    <main className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">SIF.yoga Research Assistant</h1>
-      <div className="space-y-8">
-        <TaskSelector
-          tasks={TASKS}
-          onSelect={handleTaskSelect}
-          selectedTask={selectedTask}
-        />
-        {selectedTask && (
-          <>
-            {selectedTask.outputType === "chat" ? (
-              <ChatInterface
-                onSubmit={handleChatSubmit}
-                isLoading={isLoading}
-                messages={messages}
-              />
-            ) : (
-              <>
-                <PromptInput
-                  task={selectedTask}
-                  onSubmit={handleResearchSubmit}
+    <>
+      <main className="container mx-auto p-4 max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">SIF.yoga Research Assistant</h1>
+        <div className="space-y-8">
+          <TaskSelector
+            tasks={TASKS}
+            onSelect={handleTaskSelect}
+            selectedTask={selectedTask}
+          />
+          {selectedTask && (
+            <>
+              {selectedTask.outputType === "chat" ? (
+                <ChatInterface
+                  onSubmit={handleChatSubmit}
                   isLoading={isLoading}
+                  messages={messages}
                 />
-                {error && (
-                  <div className="text-red-500 font-medium text-center">
-                    {error}
-                  </div>
-                )}
-                {results && <ResultsDisplay results={results} />}
-              </>
-            )}
-          </>
-        )}
-      </div>
-    </main>
+              ) : (
+                <>
+                  <PromptInput
+                    onSubmit={handleResearchSubmit}
+                    isLoading={isLoading}
+                  />
+                  {error && (
+                    <div className="text-red-500 font-medium text-center">
+                      {error}
+                    </div>
+                  )}
+                  {results?.content && (
+                    <ResultsDisplay results={results} isLoading={isLoading} />
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChatMessage } from "../utils/types";
+import { useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { UpdateIcon } from "@radix-ui/react-icons";
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import CitationsList from "./CitationsList";
-import { processContentWithCitations } from "../utils/citation-utils";
+import { ChatMessage } from "../utils/types";
 
 interface ChatInterfaceProps {
   onSubmit: (message: string) => void;
@@ -20,106 +20,87 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Focus input field when component mounts
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-    setInput("");
-    onSubmit(input);
-  };
+  // Add timestamp to message type
+  const messagesWithTime = messages.map((msg) => ({
+    ...msg,
+    timestamp: msg.timestamp || new Date().toISOString(),
+  }));
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)]">
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-8">
-          {messages.map((message, i) => (
+    <div className="space-y-4">
+      <div className="border rounded-lg h-[600px] flex flex-col">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messagesWithTime.map((message, index) => (
             <div
-              key={i}
+              key={index}
               className={`flex ${
                 message.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-6 ${
+                className={`max-w-[80%] ${
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted prose dark:prose-invert"
-                }`}
+                    : "bg-muted"
+                } rounded-lg p-4`}
               >
-                <div
-                  className={
-                    message.role === "user"
-                      ? ""
-                      : "prose dark:prose-invert max-w-none"
-                  }
-                >
-                  <ReactMarkdown
-                    components={{
-                      a: ({ node, ...props }) => (
-                        <a
-                          {...props}
-                          className={`${
-                            message.role === "user"
-                              ? "text-primary-foreground underline"
-                              : "text-blue-600 dark:text-blue-400 hover:underline"
-                          }`}
-                        />
-                      ),
-                    }}
-                  >
-                    {message.citations
-                      ? processContentWithCitations(
-                          message.content,
-                          message.citations
-                        )
-                      : message.content}
-                  </ReactMarkdown>
+                <div className="prose dark:prose-invert max-w-none">
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
                 </div>
                 {message.citations && (
-                  <CitationsList
-                    citations={message.citations}
-                    className={`mt-4 border-t pt-4 ${
-                      message.role === "user"
-                        ? "border-primary-foreground/20"
-                        : "border-gray-200 dark:border-gray-700"
-                    }`}
-                  />
+                  <CitationsList citations={message.citations} />
                 )}
+                <div className="text-xs mt-2 opacity-70">
+                  {formatDistanceToNow(new Date(message.timestamp), {
+                    addSuffix: true,
+                  })}
+                </div>
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-muted rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
-      </ScrollArea>
-
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex gap-2">
-          <Input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question..."
-            disabled={isLoading}
-          />
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Loading..." : "Send"}
-          </Button>
+        <div className="p-4 border-t">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmit(input);
+              setInput("");
+            }}
+          >
+            <div className="flex space-x-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your message..."
+                disabled={isLoading}
+              />
+              <Button type="submit" disabled={isLoading || !input.trim()}>
+                {isLoading ? (
+                  <span className="flex items-center space-x-2">
+                    <UpdateIcon className="w-4 h-4 animate-spin" />
+                    <span>Sending...</span>
+                  </span>
+                ) : (
+                  "Send"
+                )}
+              </Button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

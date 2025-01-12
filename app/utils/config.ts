@@ -4,8 +4,7 @@ export const TASKS: Task[] = [
   {
     id: "qa",
     name: "Q&A Chat",
-    description:
-      "Have a conversation about the teachings with contextual search and analysis",
+    description: "Have a conversation with contextual search and analysis",
     basePrompt: `Answer questions by finding and sharing relevant teachings from the source materials.
 
 When responding:
@@ -25,7 +24,7 @@ Keep responses direct and focused. If the question requires deeper exploration, 
   {
     id: "research",
     name: "Research Assistant",
-    description: "Analyze and compile information from source documents",
+    description: "Analyze and compile information",
     basePrompt: `Analyze the source materials to provide comprehensive insights on this topic. Focus on finding the most clear and effective teachings, examples, and explanations.
 
 Source Material Usage:
@@ -74,7 +73,7 @@ Structure each section to build understanding progressively. Focus on specific, 
   },
   {
     id: "article",
-    name: "Article Generator",
+    name: "Draft Article",
     description: "Generate a complete article draft",
     basePrompt: `Create an engaging article that presents these teachings clearly and naturally.
 

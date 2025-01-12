@@ -33,9 +33,17 @@ export async function POST(request: Request) {
     if (messages) {
       chatMessages = messages;
     } else {
+      const formattingInstructions = `
+Format your response in clear markdown with proper headings:
+- Use # for main headings
+- Use ## for subheadings
+- Use ### for sub-subheadings
+- Use proper markdown for lists, quotes, and emphasis
+- Structure the content hierarchically with clear sections
+`;
       const fullPrompt = basePrompt
-        ? `[Base Prompt]\n${basePrompt}\n\n[User Query]\n${prompt}`
-        : prompt;
+        ? `[Base Prompt]\n${basePrompt}\n\n[Formatting]\n${formattingInstructions}\n\n[User Query]\n${prompt}`
+        : `${formattingInstructions}\n\n${prompt}`;
       chatMessages = [{ role: "user", content: fullPrompt }];
     }
 

@@ -1,19 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Task } from "../utils/types";
+import { UpdateIcon } from "@radix-ui/react-icons";
 
 interface PromptInputProps {
-  task: Task;
   onSubmit: (prompt: string) => void;
   isLoading: boolean;
 }
 
-export default function PromptInput({
-  task,
-  onSubmit,
-  isLoading,
-}: PromptInputProps) {
+export default function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -30,10 +25,6 @@ export default function PromptInput({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold">{task.name}</h2>
-        <p className="text-sm text-gray-500">{task.description}</p>
-      </div>
       <Textarea
         ref={textareaRef}
         value={prompt}
@@ -43,7 +34,14 @@ export default function PromptInput({
         disabled={isLoading}
       />
       <Button type="submit" disabled={isLoading}>
-        {isLoading ? "Generating..." : "Generate"}
+        {isLoading ? (
+          <div className="flex items-center space-x-2">
+            <UpdateIcon className="h-4 w-4 animate-spin" />
+            <span>Generating...</span>
+          </div>
+        ) : (
+          "Generate"
+        )}
       </Button>
     </form>
   );

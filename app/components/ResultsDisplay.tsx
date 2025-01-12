@@ -1,42 +1,65 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ApiResponse } from "../utils/types";
+import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
 import ReactMarkdown from "react-markdown";
+import { processContentWithCitations } from "./Citations";
 import CitationsList from "./CitationsList";
-import { processContentWithCitations } from "../utils/citation-utils";
+import { ApiResponse } from "../utils/types";
 
 interface ResultsDisplayProps {
   results: ApiResponse;
+  isLoading?: boolean;
 }
 
-export default function ResultsDisplay({ results }: ResultsDisplayProps) {
-  const handleCopyResults = () => {
-    navigator.clipboard.writeText(results.content);
+export default function ResultsDisplay({
+  results,
+  isLoading,
+}: ResultsDisplayProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyResults = async () => {
+    await navigator.clipboard.writeText(results.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const processedContent = processContentWithCitations(
-    results.content,
-    results.citations
-  );
+  if (!results.content) return null;
+
+  // Process content to add citation links if there are citations
+  const processedContent =
+    results.citations?.length > 0
+      ? processContentWithCitations(results.content, results.citations)
+      : results.content;
 
   return (
     <div className="mt-8">
-      <div className="bg-white p-4 rounded shadow prose dark:prose-invert max-w-none mb-4">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded shadow prose dark:prose-invert max-w-none mb-4 prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg">
         <ReactMarkdown>{processedContent}</ReactMarkdown>
       </div>
 
-      <div className="mb-4">
-        <Button onClick={handleCopyResults}>Copy Results</Button>
-      </div>
+      {results.citations && results.citations.length > 0 && (
+        <div className="mb-4">
+          <CitationsList citations={results.citations} />
+        </div>
+      )}
 
-      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4 dark:bg-yellow-900/20">
-        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-          Note: AI responses can be inaccurate. Please double check all
-          responses against the original sources.
-        </p>
-      </div>
-
-      <CitationsList citations={results.citations} />
+      <Button
+        onClick={handleCopyResults}
+        variant={copied ? "outline" : "default"}
+        className="flex items-center space-x-2"
+      >
+        {copied ? (
+          <>
+            <CheckIcon className="h-4 w-4" />
+            <span>Copied!</span>
+          </>
+        ) : (
+          <>
+            <CopyIcon className="h-4 w-4" />
+            <span>Copy Results</span>
+          </>
+        )}
+      </Button>
     </div>
   );
 }
