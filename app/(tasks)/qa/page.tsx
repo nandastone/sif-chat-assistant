@@ -19,6 +19,8 @@ export default function QAPage() {
     },
   });
 
+  myUndefinedFunction();
+
   const handleSubmit = async (prompt: string) => {
     // Create messages for this conversation turn
     const userMessage: ChatMessage = {
