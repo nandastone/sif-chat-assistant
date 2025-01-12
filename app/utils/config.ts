@@ -50,7 +50,36 @@ Structure each section to build understanding progressively. Focus on specific, 
     id: "article",
     name: "Article Generator",
     description: "Generate a complete article draft",
-    basePrompt: "Write a well-structured article on the following topic:",
+    basePrompt: `Research the source materials and create an engaging article that presents these teachings clearly and naturally.
+
+Note: Documents marked as 'style_guide' in metadata should be used as references for structure and writing style only, not as sources for quotes or content.
+
+# Article Structure
+Follow the engaging style demonstrated in our example articles, which:
+- Open with compelling insights that draw readers in
+- Build understanding progressively
+- Use clear transitions between concepts
+- Integrate quotes naturally into the flow
+- Connect principles to practical applications
+
+# Content Development
+Using the source materials (not style guides):
+- Present fundamental principles clearly
+- Support key points with direct quotes
+- Include practical examples and applications
+- Address common questions or misconceptions
+- Show how different aspects connect
+- Demonstrate real-world relevance
+
+# Writing Style
+Follow the engaging approach shown in our example articles:
+- Clear, natural flow
+- Accessible yet profound
+- Direct and authoritative voice
+- Balance depth with readability
+- Effective use of analogies and examples
+
+The article should read as a cohesive, engaging piece that naturally weaves together teachings, examples, and applications while maintaining authoritative presentation of the spiritual science.`,
     outputType: "article",
   },
 ];
