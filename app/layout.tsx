@@ -5,8 +5,8 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Research & Writing Assistant",
-  description: "AI-powered research analysis and article generation",
+  title: "SIF.yoga Research Assistant",
+  description: "AI-powered research and content generation",
 };
 
 export default function RootLayout({
@@ -15,8 +15,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="[color-scheme:light_dark]">
-      <body className={inter.className}>{children}</body>
+    <html lang="en">
+      <body className={inter.className}>
+        <div className="min-h-screen flex flex-col">
+          <header className="container mx-auto p-4 max-w-4xl">
+            <h1 className="text-3xl font-bold mb-8">
+              SIF.yoga Research Assistant
+            </h1>
+          </header>
+          <main className="flex-1">{children}</main>
+          <footer className="border-t">
+            <div className="container mx-auto p-4 max-w-4xl text-center text-sm text-gray-500">
+              AI responses may be inaccurate. Please verify against original
+              sources.
+            </div>
+          </footer>
+        </div>
+      </body>
     </html>
   );
 }

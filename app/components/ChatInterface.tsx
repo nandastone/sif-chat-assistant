@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UpdateIcon } from "@radix-ui/react-icons";
-import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import CitationsList from "./CitationsList";
+import { processContentWithCitations } from "../utils/citation-utils";
 import { ChatMessage } from "../utils/types";
 
 interface ChatInterfaceProps {
@@ -20,18 +20,21 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Add timestamp to message type
-  const messagesWithTime = messages.map((msg) => ({
-    ...msg,
-    timestamp: msg.timestamp || new Date().toISOString(),
-  }));
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
   return (
     <div className="space-y-4">
-      <div className="border rounded-lg h-[600px] flex flex-col">
+      <div className="border rounded-lg h-[600px] flex flex-col bg-white">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messagesWithTime.map((message, index) => (
+          {messages.map((message, index) => (
             <div
               key={index}
               className={`flex ${
@@ -39,33 +42,35 @@ export default function ChatInterface({
               }`}
             >
               <div
-                className={`max-w-[80%] ${
+                className={`max-w-[80%] rounded-lg p-4 shadow-sm ${
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                } rounded-lg p-4`}
+                    ? "bg-gray-200 text-gray-900 border border-gray-300"
+                    : "bg-gray-50 text-gray-900 border border-gray-200"
+                }`}
               >
-                <div className="prose dark:prose-invert max-w-none">
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                <div className="prose max-w-none [&>p]:text-current [&>p]:!mb-0">
+                  <ReactMarkdown>
+                    {message.citations && message.citations.length > 0
+                      ? processContentWithCitations(
+                          message.content,
+                          message.citations
+                        )
+                      : message.content}
+                  </ReactMarkdown>
                 </div>
-                {message.citations && (
+                {message.citations && message.citations.length > 0 && (
                   <CitationsList citations={message.citations} />
                 )}
-                <div className="text-xs mt-2 opacity-70">
-                  {formatDistanceToNow(new Date(message.timestamp), {
-                    addSuffix: true,
-                  })}
-                </div>
               </div>
             </div>
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-muted rounded-lg p-4">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.4s]" />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]" />
                 </div>
               </div>
             </div>
@@ -82,6 +87,7 @@ export default function ChatInterface({
           >
             <div className="flex space-x-2">
               <Input
+                ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
