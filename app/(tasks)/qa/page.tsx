@@ -19,7 +19,14 @@ export default function QAPage() {
     },
   });
 
-  myUndefinedFunction();
+  // Test function to trigger a runtime error
+  const triggerTestError = () => {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Test error for Sentry monitoring");
+    } else {
+      console.log("Test error only works in production");
+    }
+  };
 
   const handleSubmit = async (prompt: string) => {
     // Create messages for this conversation turn
@@ -77,10 +84,15 @@ export default function QAPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={clearMessages} className="mb-2">
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={clearMessages}>
           Clear Chat
         </Button>
+        {process.env.NODE_ENV === "production" && (
+          <Button variant="destructive" onClick={triggerTestError}>
+            Test Sentry
+          </Button>
+        )}
       </div>
       <ChatInterface
         onSubmit={handleSubmit}
