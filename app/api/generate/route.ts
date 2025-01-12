@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { ApiResponse, ChatMessage } from "../../utils/types";
+import type { ApiResponse, ChatMessage, StreamChunk } from "../../utils/types";
 import { checkAssistantPrerequisites } from "../../utils/assistant-utils";
 import { verifyAuth } from "../../utils/auth-utils";
 
@@ -15,9 +15,7 @@ export async function POST(request: Request) {
 
     if (!apiKey || !assistantName) {
       return NextResponse.json(
-        {
-          error: "PINECONE_API_KEY and PINECONE_ASSISTANT_NAME are required.",
-        },
+        { error: "PINECONE_API_KEY and PINECONE_ASSISTANT_NAME are required." },
         { status: 400 }
       );
     }
@@ -47,7 +45,7 @@ Format your response in clear markdown with proper headings:
       chatMessages = [{ role: "user", content: fullPrompt }];
     }
 
-    const chatResponse = await fetch(
+    const pineconeResponse = await fetch(
       `https://prod-1-data.ke.pinecone.io/assistant/chat/${assistantName}`,
       {
         method: "POST",
@@ -57,44 +55,31 @@ Format your response in clear markdown with proper headings:
         },
         body: JSON.stringify({
           messages: chatMessages,
-          stream: false,
+          stream: true,
           model: "claude-3-5-sonnet",
         }),
       }
     );
 
-    if (!chatResponse.ok) {
-      const errorText = await chatResponse.text();
+    if (!pineconeResponse.ok) {
+      const errorText = await pineconeResponse.text();
       throw new Error(
-        `Pinecone API error: ${chatResponse.status} - ${errorText}`
+        `Pinecone API error: ${pineconeResponse.status} - ${errorText}`
       );
     }
 
-    const data = await chatResponse.json();
-
-    // Format the response according to your API schema
-    const apiResponse: ApiResponse = {
-      content: data.message.content,
-      citations:
-        data.citations?.map((citation: any) => ({
-          position: citation.position,
-          references: citation.references.map((ref: any) => ({
-            pages: ref.pages,
-            file: {
-              name: ref.file.name,
-              id: ref.file.id,
-              url: ref.file.signed_url,
-            },
-          })),
-        })) || [],
-    };
-
-    return NextResponse.json(apiResponse);
+    // Simply forward the Pinecone response stream
+    return new Response(pineconeResponse.body, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      },
+    });
   } catch (error) {
     console.error("Error generating response:", error);
-    return NextResponse.json(
-      { error: "Failed to generate response" },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to generate response";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

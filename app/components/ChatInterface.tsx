@@ -34,36 +34,40 @@ export default function ChatInterface({
     <div className="space-y-4">
       <div className="border rounded-lg h-[600px] flex flex-col bg-white">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+          {messages
+            .filter(
+              (msg) => msg.role !== "assistant" || msg.content.trim() !== ""
+            )
+            .map((message, index) => (
               <div
-                className={`max-w-[80%] rounded-lg p-4 shadow-sm ${
-                  message.role === "user"
-                    ? "bg-gray-200 text-gray-900 border border-gray-300"
-                    : "bg-gray-50 text-gray-900 border border-gray-200"
+                key={index}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                <div className="prose max-w-none [&>p]:text-current [&>p]:!mb-0">
-                  <ReactMarkdown>
-                    {message.citations && message.citations.length > 0
-                      ? processContentWithCitations(
-                          message.content,
-                          message.citations
-                        )
-                      : message.content}
-                  </ReactMarkdown>
+                <div
+                  className={`max-w-[80%] rounded-lg p-4 shadow-sm ${
+                    message.role === "user"
+                      ? "bg-gray-200 text-gray-900 border border-gray-300"
+                      : "bg-gray-50 text-gray-900 border border-gray-200"
+                  }`}
+                >
+                  <div className="prose max-w-none [&>p]:text-current [&>p]:!mb-0">
+                    <ReactMarkdown>
+                      {message.citations && message.citations.length > 0
+                        ? processContentWithCitations(
+                            message.content,
+                            message.citations
+                          )
+                        : message.content}
+                    </ReactMarkdown>
+                  </div>
+                  {message.citations && message.citations.length > 0 && (
+                    <CitationsList citations={message.citations} />
+                  )}
                 </div>
-                {message.citations && message.citations.length > 0 && (
-                  <CitationsList citations={message.citations} />
-                )}
               </div>
-            </div>
-          ))}
+            ))}
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">

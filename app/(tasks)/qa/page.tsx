@@ -1,42 +1,46 @@
 "use client";
 
 import ChatInterface from "@/app/components/ChatInterface";
-import { ChatMessage, ApiResponse } from "@/app/utils/types";
+import { ChatMessage, Citation } from "@/app/utils/types";
 import { TASKS } from "@/app/utils/config";
-import { getAuthHeader } from "@/app/utils/auth-utils";
 import { useChatStore } from "@/app/utils/store";
 import { Button } from "@/components/ui/button";
+import { usePineconeStream } from "@/app/utils/hooks";
 
 export default function QAPage() {
-  const {
-    messages,
-    isLoading,
-    setIsLoading,
-    addMessage,
-    setMessages,
-    clearMessages,
-  } = useChatStore();
+  const { messages, setMessages, clearMessages } = useChatStore();
   const task = TASKS.find((t) => t.id === "qa")!;
 
-  const handleSubmit = async (prompt: string) => {
-    setIsLoading(true);
+  const { streamRequest, isLoading } = usePineconeStream({
+    onError: (error) => {
+      // Remove both messages on error
+      setMessages(messages);
+      throw error;
+    },
+  });
 
-    // Add user message immediately
+  const handleSubmit = async (prompt: string) => {
+    // Create messages for this conversation turn
     const userMessage: ChatMessage = {
       role: "user",
       content: prompt,
     };
-    addMessage(userMessage);
+    const assistantMessage: ChatMessage = {
+      role: "assistant",
+      content: "",
+      citations: [],
+    };
+
+    // Add both messages to create the conversation turn
+    const currentMessages = [...messages, userMessage, assistantMessage];
+    setMessages(currentMessages);
+
+    let content = "";
+    let citations: Citation[] = [];
 
     try {
-      const authHeader = await getAuthHeader();
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
-        body: JSON.stringify({
+      await streamRequest(
+        {
           task: task.id,
           messages: task.basePrompt
             ? [
@@ -45,24 +49,27 @@ export default function QAPage() {
                 userMessage,
               ]
             : [...messages, userMessage],
-        }),
-      });
+        },
+        (data) => {
+          if (data.content) {
+            content += data.content;
+          }
+          if (data.citations) {
+            citations = [...citations, ...data.citations];
+          }
 
-      if (!response.ok) throw new Error("Failed to generate content");
-      const data: ApiResponse = await response.json();
-
-      const assistantMessage: ChatMessage = {
-        role: "assistant",
-        content: data.content,
-        citations: data.citations,
-      };
-      addMessage(assistantMessage);
-    } catch (err) {
-      // Remove the user message if there was an error
-      setMessages(messages.slice(0, -1));
-      throw err;
-    } finally {
-      setIsLoading(false);
+          // Update the assistant's message
+          const updatedMessages = [...currentMessages];
+          const assistantMsg = updatedMessages[updatedMessages.length - 1];
+          assistantMsg.content = content;
+          assistantMsg.citations = citations;
+          setMessages(updatedMessages);
+        }
+      );
+    } catch (error) {
+      // Remove both messages on error
+      setMessages(messages);
+      throw error;
     }
   };
 

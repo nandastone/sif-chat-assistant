@@ -9,11 +9,13 @@ import { ApiResponse } from "../utils/types";
 interface ResultsDisplayProps {
   results: ApiResponse;
   isLoading?: boolean;
+  showCopyButton?: boolean;
 }
 
 export default function ResultsDisplay({
   results,
   isLoading,
+  showCopyButton = true,
 }: ResultsDisplayProps) {
   const [copied, setCopied] = useState(false);
 
@@ -32,7 +34,28 @@ export default function ResultsDisplay({
       : results.content;
 
   return (
-    <div className="mt-8">
+    <div>
+      {showCopyButton && (
+        <div className="flex justify-end mb-2">
+          <Button
+            onClick={handleCopyResults}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            {copied ? (
+              <>
+                <CheckIcon className="h-4 w-4" />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <CopyIcon className="h-4 w-4" />
+                <span>Copy</span>
+              </>
+            )}
+          </Button>
+        </div>
+      )}
       <div className="bg-white dark:bg-gray-800 p-4 rounded shadow prose dark:prose-invert max-w-none mb-4 prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg">
         <ReactMarkdown>{processedContent}</ReactMarkdown>
       </div>
@@ -42,24 +65,6 @@ export default function ResultsDisplay({
           <CitationsList citations={results.citations} />
         </div>
       )}
-
-      <Button
-        onClick={handleCopyResults}
-        variant={copied ? "outline" : "default"}
-        className="flex items-center space-x-2"
-      >
-        {copied ? (
-          <>
-            <CheckIcon className="h-4 w-4" />
-            <span>Copied!</span>
-          </>
-        ) : (
-          <>
-            <CopyIcon className="h-4 w-4" />
-            <span>Copy Results</span>
-          </>
-        )}
-      </Button>
     </div>
   );
 }
