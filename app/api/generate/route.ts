@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { ApiResponse } from "../../utils/types";
+import type { ApiResponse, ChatMessage } from "../../utils/types";
 import { checkAssistantPrerequisites } from "../../utils/assistantUtils";
 import { verifyAuth } from "../../utils/authUtils";
 
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { task, prompt, basePrompt } = await request.json();
+    const { task, prompt, basePrompt, messages } = await request.json();
     const { apiKey, assistantName } = await checkAssistantPrerequisites();
 
     if (!apiKey || !assistantName) {
@@ -22,16 +22,22 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!task || !prompt) {
+    if (!task || (!prompt && !messages)) {
       return NextResponse.json(
-        { error: "Task and prompt are required" },
+        { error: "Task and either prompt or messages are required" },
         { status: 400 }
       );
     }
 
-    const fullPrompt = basePrompt
-      ? `[Base Prompt]\n${basePrompt}\n\n[User Query]\n${prompt}`
-      : prompt;
+    let chatMessages: ChatMessage[];
+    if (messages) {
+      chatMessages = messages;
+    } else {
+      const fullPrompt = basePrompt
+        ? `[Base Prompt]\n${basePrompt}\n\n[User Query]\n${prompt}`
+        : prompt;
+      chatMessages = [{ role: "user", content: fullPrompt }];
+    }
 
     const chatResponse = await fetch(
       `https://prod-1-data.ke.pinecone.io/assistant/chat/${assistantName}`,
@@ -42,12 +48,7 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: fullPrompt,
-            },
-          ],
+          messages: chatMessages,
           stream: false,
           model: "claude-3-5-sonnet",
         }),

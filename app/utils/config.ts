@@ -2,6 +2,27 @@ import { Task } from "./types";
 
 export const TASKS: Task[] = [
   {
+    id: "qa",
+    name: "Q&A Chat",
+    description:
+      "Have a conversation about the teachings with contextual search and analysis",
+    basePrompt: `Answer questions by finding and sharing relevant teachings from the source materials.
+
+When responding:
+1. Lead with the most relevant quote(s) that directly answer the question
+2. Provide brief context if needed to understand the quote
+3. Keep responses clear and focused on what was asked
+4. Include proper citations
+
+Source Material Usage:
+- Primary: Use teachings from Jagad Guru Siddhaswarupananda
+- Supporting: Include relevant teachings from Bhaktivedanta Swami when they directly support the point
+- Citations: Reference source documents for all quotes
+
+Keep responses direct and focused. If the question requires deeper exploration, wait for follow-up questions rather than providing extensive detail upfront.`,
+    outputType: "chat",
+  },
+  {
     id: "research",
     name: "Research Assistant",
     description: "Analyze and compile information from source documents",
