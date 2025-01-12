@@ -79,7 +79,15 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
                 [{index + 1}]
                 {citation.references.map((ref, refIndex) => (
                   <span key={refIndex} className="text-sm text-gray-600 ml-2">
-                    - {ref.file.name}
+                    -{" "}
+                    <a
+                      href={ref.file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {ref.file.name}
+                    </a>
                   </span>
                 ))}
               </li>

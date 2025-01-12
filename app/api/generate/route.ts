@@ -74,6 +74,7 @@ export async function POST(request: Request) {
             file: {
               name: ref.file.name,
               id: ref.file.id,
+              url: ref.file.signed_url,
             },
           })),
         })) || [],

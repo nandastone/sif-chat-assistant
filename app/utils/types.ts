@@ -1,9 +1,9 @@
 export interface Task {
-  id: 'research' | 'article';
+  id: "research" | "article";
   name: string;
   description: string;
   basePrompt: string;
-  outputType: 'research' | 'article';
+  outputType: "research" | "article";
 }
 
 export interface Citation {
@@ -13,7 +13,8 @@ export interface Citation {
     file: {
       name: string;
       id: string;
-    }
+      url: string;
+    };
   }[];
 }
 
@@ -21,4 +22,3 @@ export interface ApiResponse {
   content: string;
   citations: Citation[];
 }
-
