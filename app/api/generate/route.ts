@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import type { ApiResponse, ChatMessage, StreamChunk } from "../../utils/types";
+import type { ChatMessage } from "../../utils/types";
 import { checkAssistantPrerequisites } from "../../utils/assistant-utils";
 import { verifyAuth } from "../../utils/auth-utils";
+
+// https://vercel.com/docs/functions/configuring-functions/duration#node.js-next.js-%3E=-13.5-or-higher-sveltekit-astro-nuxt-and-remix
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {

@@ -1,15 +1,31 @@
 # Research Assistant
 
-A Next.js application that provides a streamlined interface for AI-powered research and content generation using Pinecone's AI capabilities.
+A Next.js application that provides a streamlined interface for AI-powered research and content generation using Pinecone's AI capabilities. Features include article research, Q&A assistance, and content generation tasks.
+
+## Features
+
+- Research assistance with AI-powered insights
+- Question & Answer interface
+- Article analysis and content generation
+- Modern, responsive UI
+- Real-time content generation
+- Task-based navigation system
 
 ## Tech Stack
 
-- **Framework**: Next.js 14
+- **Framework**: Next.js 14.2
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **UI Components**: Radix UI
+- **UI Components**:
+  - Radix UI primitives
+  - Shadcn/ui components
+  - Custom React components
+- **State Management**: Zustand
 - **AI Integration**: Pinecone
-- **Authentication**: Custom auth implementation
+- **Form Handling**: React Hook Form + Zod
+- **Date Handling**: date-fns
+- **Markdown Support**: react-markdown
+- **Theme**: next-themes
 
 ## Prerequisites
 
@@ -31,24 +47,10 @@ A Next.js application that provides a streamlined interface for AI-powered resea
    ```
    PINECONE_API_KEY=your_api_key
    PINECONE_ASSISTANT_NAME=your_assistant_name
+   AUTH_SECRET=your_secure_secret
    ```
 
-4. Configure authentication:
-
-   - Generate a secure secret key for API authentication
-   - Add the secret key to your environment variables:
-
-   ```
-   AUTH_SECRET_KEY=your_secure_secret
-   ```
-
-   - Include this secret in the Authorization header for all API requests:
-
-   ```
-   Authorization: Bearer your_secure_secret
-   ```
-
-5. Run the development server:
+4. Run the development server:
 
    ```bash
    npm run dev
@@ -56,7 +58,7 @@ A Next.js application that provides a streamlined interface for AI-powered resea
    bun dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Available Scripts
 
@@ -68,7 +70,18 @@ A Next.js application that provides a streamlined interface for AI-powered resea
 ## API Endpoints
 
 - `POST /api/generate` - Generate research assistance responses
-- `GET /api/auth-test` - Test authentication status
+  - Supports streaming responses with Server-Sent Events (SSE)
+  - 60-second timeout for long-running requests
+  - Requires authentication via Authorization header
+  - Request body:
+    ```json
+    {
+      "task": "string",
+      "prompt": "string",
+      "basePrompt": "string (optional)",
+      "messages": "array (optional)"
+    }
+    ```
 
 ## License
 
