@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { ApiResponse, ChatMessage } from "../../utils/types";
-import { checkAssistantPrerequisites } from "../../utils/assistantUtils";
-import { verifyAuth } from "../../utils/authUtils";
+import { checkAssistantPrerequisites } from "../../utils/assistant-utils";
+import { verifyAuth } from "../../utils/auth-utils";
 
 export async function POST(request: Request) {
   try {

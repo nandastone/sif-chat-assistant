@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ApiResponse } from "../utils/types";
 import ReactMarkdown from "react-markdown";
-import CitationsList, { processContentWithCitations } from "./Citations";
+import CitationsList from "./CitationsList";
+import { processContentWithCitations } from "../utils/citation-utils";
 
 interface ResultsDisplayProps {
   results: ApiResponse;

@@ -7,7 +7,7 @@ import ResultsDisplay from "./components/ResultsDisplay";
 import ChatInterface from "./components/ChatInterface";
 import { Task, ApiResponse, ChatMessage } from "./utils/types";
 import { TASKS } from "./utils/config";
-import { getAuthHeader } from "./utils/authUtils";
+import { getAuthHeader } from "./utils/auth-utils";
 
 export default function Home() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(TASKS[0]);
@@ -44,7 +44,13 @@ export default function Home() {
         },
         body: JSON.stringify({
           task: selectedTask?.id,
-          messages: [...messages, userMessage], // Include the new user message
+          messages: selectedTask?.basePrompt
+            ? [
+                { role: "assistant", content: selectedTask.basePrompt },
+                ...messages,
+                userMessage,
+              ]
+            : [...messages, userMessage],
         }),
       });
 
@@ -98,37 +104,40 @@ export default function Home() {
   };
 
   return (
-    <main className="container mx-auto p-4 space-y-8">
-      <TaskSelector
-        tasks={TASKS}
-        onSelect={handleTaskSelect}
-        selectedTask={selectedTask}
-      />
-      {selectedTask && (
-        <>
-          {selectedTask.outputType === "chat" ? (
-            <ChatInterface
-              onSubmit={handleChatSubmit}
-              isLoading={isLoading}
-              messages={messages}
-            />
-          ) : (
-            <>
-              <PromptInput
-                task={selectedTask}
-                onSubmit={handleResearchSubmit}
+    <main className="container mx-auto p-4 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-8">SIF.yoga Research Assistant</h1>
+      <div className="space-y-8">
+        <TaskSelector
+          tasks={TASKS}
+          onSelect={handleTaskSelect}
+          selectedTask={selectedTask}
+        />
+        {selectedTask && (
+          <>
+            {selectedTask.outputType === "chat" ? (
+              <ChatInterface
+                onSubmit={handleChatSubmit}
                 isLoading={isLoading}
+                messages={messages}
               />
-              {error && (
-                <div className="text-red-500 font-medium text-center">
-                  {error}
-                </div>
-              )}
-              {results && <ResultsDisplay results={results} />}
-            </>
-          )}
-        </>
-      )}
+            ) : (
+              <>
+                <PromptInput
+                  task={selectedTask}
+                  onSubmit={handleResearchSubmit}
+                  isLoading={isLoading}
+                />
+                {error && (
+                  <div className="text-red-500 font-medium text-center">
+                    {error}
+                  </div>
+                )}
+                {results && <ResultsDisplay results={results} />}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </main>
   );
 }

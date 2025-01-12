@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "../../utils/authUtils";
+import { verifyAuth } from "../../utils/auth-utils";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");

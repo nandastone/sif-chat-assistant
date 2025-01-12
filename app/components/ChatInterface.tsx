@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "../utils/types";
 import ReactMarkdown from "react-markdown";
-import CitationsList, { processContentWithCitations } from "./Citations";
+import CitationsList from "./CitationsList";
+import { processContentWithCitations } from "../utils/citation-utils";
 
 interface ChatInterfaceProps {
   onSubmit: (message: string) => void;
@@ -42,7 +43,7 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] max-w-4xl mx-auto">
+    <div className="flex flex-col h-[calc(100vh-12rem)]">
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-8">
           {messages.map((message, i) => (
