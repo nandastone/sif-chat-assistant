@@ -7,6 +7,10 @@ export const TASKS: Task[] = [
     description: "Analyze and compile information from source documents",
     basePrompt: `Analyze the source materials to provide comprehensive insights on this topic. Focus on finding the most clear and effective teachings, examples, and explanations.
 
+Source Material Usage:
+- Primary focus: Use teachings from Jagad Guru Siddhaswarupananda (Author metadata)
+- When relevant, include teachings from Bhaktivedanta Swami (Author metadata) that naturally support or expand on the topic
+
 # Core Understanding
 Present the fundamental teachings, structured as:
 1. Key principles with the most clear and powerful quotes that explain them
@@ -35,6 +39,7 @@ Show how these teachings address real-world situations:
 When finding quotes and examples:
 - Include the most powerful and clear explanations
 - Show how teachings practically apply to current issues
+- Include relevant supporting references that deepen understanding
 
 Focus on finding and presenting:
 - The clearest explanations
@@ -50,36 +55,23 @@ Structure each section to build understanding progressively. Focus on specific, 
     id: "article",
     name: "Article Generator",
     description: "Generate a complete article draft",
-    basePrompt: `Research the source materials and create an engaging article that presents these teachings clearly and naturally.
+    basePrompt: `Create an engaging article that presents these teachings clearly and naturally.
 
-Note: Documents marked as 'style_guide' in metadata should be used as references for structure and writing style only, not as sources for quotes or content.
+Source Material Usage:
+- Writing style: Follow approach of documents marked Usage: "style_guide" (opening style, metaphors, progression of ideas)
+- Primary content: Use teachings, quotes, and examples from Jagad Guru Siddhaswarupananda
+- Supporting content: Where relevant, include teachings from Bhaktivedanta Swami that naturally reinforce the topic
 
-# Article Structure
-Follow the engaging style demonstrated in our example articles, which:
-- Open with compelling insights that draw readers in
-- Build understanding progressively
-- Use clear transitions between concepts
-- Integrate quotes naturally into the flow
-- Connect principles to practical applications
+Article Requirements:
+- Open engagingly following style guide examples
+- Build understanding through direct quotes and teachings
+- Use real examples and analogies from the source materials
+- Include relevant Q&A exchanges that illuminate points
+- Show practical applications through specific examples
+- Integrate quotes naturally into the discussion
+- Maintain clear flow between concepts
 
-# Content Development
-Using the source materials (not style guides):
-- Present fundamental principles clearly
-- Support key points with direct quotes
-- Include practical examples and applications
-- Address common questions or misconceptions
-- Show how different aspects connect
-- Demonstrate real-world relevance
-
-# Writing Style
-Follow the engaging approach shown in our example articles:
-- Clear, natural flow
-- Accessible yet profound
-- Direct and authoritative voice
-- Balance depth with readability
-- Effective use of analogies and examples
-
-The article should read as a cohesive, engaging piece that naturally weaves together teachings, examples, and applications while maintaining authoritative presentation of the spiritual science.`,
+The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.`,
     outputType: "article",
   },
 ];
