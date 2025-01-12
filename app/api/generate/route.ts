@@ -5,7 +5,7 @@ import { verifyAuth } from "../../utils/auth-utils";
 import * as Sentry from "@sentry/nextjs";
 
 // https://vercel.com/docs/functions/configuring-functions/duration#node.js-next.js-%3E=-13.5-or-higher-sveltekit-astro-nuxt-and-remix
-// export const maxDuration = 60;
+export const maxDuration = 60;
 
 const reportError = (error: unknown, context?: Record<string, unknown>) => {
   console.error("Error generating response:", error);
