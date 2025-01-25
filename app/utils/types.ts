@@ -1,5 +1,5 @@
 export interface Task {
-  id: "research" | "article" | "qa";
+  id: "research" | "article" | "qa" | "draft-article";
   name: string;
   description: string;
   basePrompt: string;
@@ -14,15 +14,10 @@ export interface ChatMessage {
 }
 
 export interface Citation {
-  position: number;
-  references: {
-    pages: number[];
-    file: {
-      name: string;
-      id: string;
-      url: string;
-    };
-  }[];
+  text: string;
+  source: string;
+  position?: number;
+  references?: string[];
 }
 
 export interface ApiResponse {

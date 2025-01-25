@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { ChatMessage } from "../../utils/types";
 import { checkAssistantPrerequisites } from "../../utils/assistant-utils";
 import { verifyAuth } from "../../utils/auth-utils";
+import { shouldEnforceAuth } from "../../utils/config";
 import * as Sentry from "@sentry/nextjs";
 
 // https://vercel.com/docs/functions/configuring-functions/duration#node.js-next.js-%3E=-13.5-or-higher-sveltekit-astro-nuxt-and-remix
@@ -14,9 +15,11 @@ const reportError = (error: unknown, context?: Record<string, unknown>) => {
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get("authorization");
-    if (!verifyAuth(authHeader)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (shouldEnforceAuth) {
+      const authHeader = request.headers.get("authorization");
+      if (!verifyAuth(authHeader)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
 
     const { task, prompt, basePrompt, messages } = await request.json();

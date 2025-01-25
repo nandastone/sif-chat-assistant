@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { shouldEnforceAuth } from "./app/utils/config";
 
 export function middleware(request: NextRequest) {
-  // Skip auth check in development
-  if (process.env.NODE_ENV === "development") {
+  if (!shouldEnforceAuth) {
     return NextResponse.next();
   }
 

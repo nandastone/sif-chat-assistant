@@ -56,12 +56,17 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
       timeoutId = setTimeout(checkTimeout, 1000);
 
       const authHeader = await getAuthHeader();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (authHeader) {
+        headers.Authorization = authHeader;
+      }
+
       const response = await fetch("/api/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
+        headers,
         body: JSON.stringify(requestData),
       });
 

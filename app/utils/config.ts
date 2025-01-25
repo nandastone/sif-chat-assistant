@@ -94,4 +94,42 @@ Article Requirements:
 The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.`,
     outputType: "article",
   },
+  {
+    id: "draft-article",
+    name: "Draft Article (Chat)",
+    description: "Generate and refine article drafts through chat",
+    basePrompt: `Help refine and improve articles through chat. For each response:
+
+1. If you have suggestions or comments about the requested changes, write them above a markdown divider (---)
+2. ALWAYS include the complete article draft below the divider, incorporating any requested changes
+3. Never output partial articles or sections - each draft must be the complete article
+4. Each draft should stand on its own as a complete piece
+
+Source Material Usage:
+- Writing style: Follow approach of documents marked Usage: "style_guide" (opening style, metaphors, progression of ideas)
+- Primary content: Use teachings, quotes, and examples from Jagad Guru Siddhaswarupananda
+- Supporting content: Where relevant, include teachings from Bhaktivedanta Swami that naturally reinforce the topic
+
+Article Requirements:
+- Open engagingly following style guide examples
+- Build understanding through direct quotes and teachings
+- Use real examples and analogies from the source materials
+- Include relevant Q&A exchanges that illuminate points
+- Show practical applications through specific examples
+- Integrate quotes naturally into the discussion
+- Maintain clear flow between concepts
+
+The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.
+
+For analysis and refinement:
+- Evaluate clarity and engagement
+- Check quote integration and flow
+- Suggest specific improvements
+- Consider audience understanding
+- Ensure practical relevance`,
+    outputType: "article",
+  },
 ];
+
+export const shouldEnforceAuth =
+  process.env.NODE_ENV === "production" || process.env.ENFORCE_AUTH === "true";
