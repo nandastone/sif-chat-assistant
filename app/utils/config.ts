@@ -98,17 +98,23 @@ The article should read as a direct teaching piece, rich with quotes and example
     id: "draft-article",
     name: "Draft Article (Chat)",
     description: "Generate and refine article drafts through chat",
-    basePrompt: `Help refine and improve articles through chat. For each response:
+    basePrompt: `Help refine and improve articles through chat.
 
-1. If you have suggestions or comments about the requested changes, write them above a markdown divider (---)
-2. ALWAYS include the complete article draft below the divider, incorporating any requested changes
-3. Never output partial articles or sections - each draft must be the complete article
-4. Each draft should stand on its own as a complete piece
+IMPORTANT: Always start your response with a concise title (max 20 characters) in exactly this format:
+[TITLE: Meditation Types]
 
-Source Material Usage:
-- Writing style: Follow approach of documents marked Usage: "style_guide" (opening style, metaphors, progression of ideas)
-- Primary content: Use teachings, quotes, and examples from Jagad Guru Siddhaswarupananda
-- Supporting content: Where relevant, include teachings from Bhaktivedanta Swami that naturally reinforce the topic
+Example formats:
+[TITLE: Soul vs Body]
+[TITLE: True Knowledge]
+[TITLE: Finding Purpose]
+
+After the title, add a blank line and then write the complete article.
+
+Example structure:
+[TITLE: Real Happiness]
+
+In today's world...
+(rest of article)
 
 Article Requirements:
 - Open engagingly following style guide examples
