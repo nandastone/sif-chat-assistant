@@ -1,42 +1,32 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { MessageItem } from "./types";
 
-export interface ArticleChat {
+interface Chat {
   id: string;
   title: string;
   createdAt: Date;
-  history: Array<{
-    type: "prompt" | "draft" | "analysis";
-    content: string;
-    timestamp: Date;
-    citations?: Array<{
-      text: string;
-      source: string;
-      position?: number;
-      references?: string[];
-    }>;
-    isLatest?: boolean;
-  }>;
+  history: MessageItem[];
   expandedDraftIndex?: number;
 }
 
 interface ArticleChatStore {
-  chats: ArticleChat[];
-  activeChat?: ArticleChat;
+  chats: Chat[];
+  activeChat: Chat | null;
   createChat: (title: string) => void;
-  loadChat: (id: string) => void;
-  updateActiveChat: (chat: Partial<ArticleChat>) => void;
+  updateActiveChat: (updates: Partial<Chat>) => void;
   deleteChat: (id: string) => void;
+  setActiveChat: (id: string) => void;
 }
 
 export const useArticleChatStore = create<ArticleChatStore>()(
   persist(
     (set, get) => ({
       chats: [],
-      activeChat: undefined,
+      activeChat: null,
 
       createChat: (title: string) => {
-        const newChat: ArticleChat = {
+        const newChat: Chat = {
           id: Date.now().toString(),
           title,
           createdAt: new Date(),
@@ -48,14 +38,7 @@ export const useArticleChatStore = create<ArticleChatStore>()(
         }));
       },
 
-      loadChat: (id: string) => {
-        const chat = get().chats.find((c) => c.id === id);
-        if (chat) {
-          set({ activeChat: chat });
-        }
-      },
-
-      updateActiveChat: (updates: Partial<ArticleChat>) => {
+      updateActiveChat: (updates: Partial<Chat>) => {
         const activeChat = get().activeChat;
         if (!activeChat) return;
 
@@ -90,6 +73,13 @@ export const useArticleChatStore = create<ArticleChatStore>()(
             chats: filteredChats,
             activeChat: filteredChats[0],
           });
+        }
+      },
+
+      setActiveChat: (id: string) => {
+        const chat = get().chats.find((c) => c.id === id);
+        if (chat) {
+          set({ activeChat: chat });
         }
       },
     }),

@@ -92,3 +92,15 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.draft-list {
+  counter-reset: draft;
+}
+
+.draft-item {
+  counter-increment: draft;
+}
+
+.draft-item .ml-2::before {
+  content: counter(draft) " • ";
+}

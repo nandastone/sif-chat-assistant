@@ -139,3 +139,11 @@ For analysis and refinement:
 
 export const shouldEnforceAuth =
   process.env.NODE_ENV === "production" || process.env.ENFORCE_AUTH === "true";
+
+// API endpoint configuration
+export const API_ENDPOINTS = {
+  generate:
+    process.env.NEXT_PUBLIC_USE_MOCK_API === "true"
+      ? "/api/generate-mock"
+      : "/api/generate",
+};

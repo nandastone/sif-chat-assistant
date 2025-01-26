@@ -40,3 +40,12 @@ export interface StreamChunk {
     total_tokens: number;
   };
 }
+
+export interface MessageItem {
+  type: "prompt" | "draft" | "analysis";
+  content: string;
+  timestamp: Date;
+  citations?: Citation[];
+  isLatest?: boolean;
+  analysisType?: string;
+}

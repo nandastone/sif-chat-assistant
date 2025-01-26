@@ -10,6 +10,13 @@ import {
 import CitationsList from "./CitationsList";
 import { processContentWithCitations } from "../utils/citation-utils";
 import { Citation } from "../utils/types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface ArticleDraft {
   preview: string;
@@ -22,14 +29,47 @@ interface ArticleDraft {
 interface Analysis {
   suggestions: string[];
   timestamp: Date;
+  analysisType?: string;
 }
 
+export interface AnalysisType {
+  id: string;
+  label: string;
+  prompt: string;
+}
+
+export const ANALYSIS_TYPES: AnalysisType[] = [
+  {
+    id: "clarity",
+    label: "Check Clarity & Structure",
+    prompt:
+      "Analyze this article for clarity, structure, and flow. Suggest specific improvements to make the content more clear and engaging.",
+  },
+  {
+    id: "wikipedia",
+    label: "Wikipedia Guidelines",
+    prompt:
+      "Analyze this article against Wikipedia's editorial guidelines. Check for neutral tone, proper citations, and areas that need more authoritative sources.",
+  },
+  {
+    id: "completeness",
+    label: "Check Completeness",
+    prompt:
+      "Analyze if this article covers all key aspects of the topic. Identify any missing important points or areas that need more depth.",
+  },
+];
+
 interface ArticleMessageProps {
-  draft: ArticleDraft;
-  onAnalyze?: () => void;
+  draft: {
+    preview: string;
+    content: string;
+    timestamp: Date;
+    citations: Citation[];
+    isLatest?: boolean;
+  };
+  onAnalyze?: (analysisPrompt: string) => void;
   isExpanded?: boolean;
   onToggleExpand?: (expanded: boolean) => void;
-  draftNumber?: number;
 }
 
 interface AnalysisMessageProps {
@@ -40,13 +80,11 @@ interface AnalysisMessageProps {
 export function ArticleMessage({
   draft,
   onAnalyze,
-  isExpanded = false,
+  isExpanded,
   onToggleExpand,
-  draftNumber,
 }: ArticleMessageProps) {
   const [localExpanded, setLocalExpanded] = useState(isExpanded);
 
-  // Update local state when prop changes
   useEffect(() => {
     setLocalExpanded(isExpanded);
   }, [isExpanded]);
@@ -58,32 +96,44 @@ export function ArticleMessage({
   };
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
-      <div className="flex items-start justify-between">
-        <button
-          onClick={handleToggle}
-          className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900"
-        >
-          {localExpanded ? (
-            <ChevronDownIcon className="w-4 h-4" />
-          ) : (
-            <ChevronRightIcon className="w-4 h-4" />
-          )}
-          <span>
-            Draft {draftNumber ? `${draftNumber} • ` : ""}
-            {draft.timestamp.toLocaleString()}
-          </span>
-        </button>
-        {draft.isLatest && onAnalyze && (
+    <div className="draft-item space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={onAnalyze}
-            className="ml-2"
+            onClick={() => onToggleExpand?.(!isExpanded)}
           >
-            Analyze
+            <ChevronRightIcon
+              className={cn("h-4 w-4 transition-transform", {
+                "rotate-90": isExpanded,
+              })}
+            />
+            <span className="ml-2">Draft</span>
           </Button>
-        )}
+          {onAnalyze && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Analyze
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {ANALYSIS_TYPES.map((type) => (
+                  <DropdownMenuItem
+                    key={type.id}
+                    onClick={() => onAnalyze?.(type.prompt)}
+                  >
+                    {type.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+        <span className="text-sm text-gray-500">
+          {draft.timestamp.toLocaleString()}
+        </span>
       </div>
 
       <div className={localExpanded ? "block" : "hidden"}>
@@ -111,7 +161,8 @@ export function AnalysisMessage({ analysis, onApply }: AnalysisMessageProps) {
     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-4">
       <div className="flex items-center justify-between">
         <span className="text-sm text-gray-600">
-          Analysis {analysis.timestamp.toLocaleString()}
+          {analysis.analysisType || "Analysis"} •{" "}
+          {analysis.timestamp.toLocaleString()}
         </span>
         <Button variant="outline" size="sm" onClick={onApply}>
           Apply Changes
@@ -121,7 +172,9 @@ export function AnalysisMessage({ analysis, onApply }: AnalysisMessageProps) {
         {analysis.suggestions.map((suggestion, index) => (
           <div key={index} className="flex items-start space-x-2">
             <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500 mt-1" />
-            <p className="text-sm text-gray-700">{suggestion}</p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {suggestion}
+            </p>
           </div>
         ))}
       </div>

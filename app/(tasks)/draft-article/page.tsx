@@ -1,107 +1,177 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiResponse, Citation } from "@/app/utils/types";
+import { Citation } from "@/app/utils/types";
 import { TASKS } from "@/app/utils/config";
 import { usePineconeStream } from "@/hooks/use-pinecone-stream";
-import {
-  ArticleMessage,
-  AnalysisMessage,
-} from "@/app/components/ArticleMessage";
 import { LoadingBubbles } from "@/app/components/LoadingBubbles";
-import { ArticleChatHistory } from "@/app/components/ArticleChatHistory";
-import { useArticleChatStore } from "@/app/utils/article-chat-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Cross2Icon } from "@radix-ui/react-icons";
+
+interface Message {
+  type: "prompt" | "draft" | "analysis";
+  content: string;
+  citations?: Citation[];
+}
+
+interface Chat {
+  id: string;
+  title: string;
+  messages: Message[];
+}
+
+const ANALYSIS_TYPES = [
+  {
+    id: "wikipedia",
+    label: "Wikipedia Guidelines",
+    prompt:
+      "Evaluate this article's suitability as a Wikipedia reference based on the following criteria: reliability of the publisher/author, independence from the subject, factual accuracy, and third-party verification. Check if it meets Wikipedia's requirements for reliable sources, including editorial oversight and reputation.",
+  },
+  {
+    id: "completeness",
+    label: "Check Completeness",
+    prompt:
+      "Analyze if this article covers all key aspects of the topic. Identify any missing important points or areas that need more depth.",
+  },
+  {
+    id: "clarity",
+    label: "Check Clarity & Structure",
+    prompt:
+      "Analyze this article for clarity, structure, and flow. Suggest specific improvements to make the content more clear and engaging.",
+  },
+];
 
 export default function DraftArticlePage() {
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [stagingMessage, setStagingMessage] = useState<Message | null>(null);
   const [input, setInput] = useState("");
-  const [hasStreamStarted, setHasStreamStarted] = useState(false);
   const task = TASKS.find((t) => t.id === "article")!;
-  const { streamRequest, isLoading, isStreaming } = usePineconeStream();
+  const { streamRequest, isStreaming } = usePineconeStream();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const { chats, activeChat, createChat, updateActiveChat } =
-    useArticleChatStore();
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Handle initial hydration
+  // Load chats from localStorage
   useEffect(() => {
-    setIsHydrated(true);
+    const savedChats = localStorage.getItem("chats");
+    if (savedChats) {
+      const parsed = JSON.parse(savedChats);
+      setChats(parsed);
+      // Set the first chat as active if none is active
+      if (parsed.length > 0) {
+        setActiveChat(parsed[0]);
+      }
+    } else {
+      // Create initial chat
+      const newChat = {
+        id: Date.now().toString(),
+        title: "New Article",
+        messages: [],
+      };
+      setChats([newChat]);
+      setActiveChat(newChat);
+    }
   }, []);
 
-  // Create a new chat if none exist after hydration
+  // Save chats to localStorage whenever they change
   useEffect(() => {
-    if (isHydrated && chats.length === 0) {
-      createChat("New Article");
+    if (chats.length > 0) {
+      localStorage.setItem("chats", JSON.stringify(chats));
     }
-  }, [isHydrated, chats.length, createChat]);
+  }, [chats]);
 
-  // Add auto-resize functionality
-  const adjustTextareaHeight = () => {
-    const textarea = inputRef.current;
-    if (textarea) {
-      textarea.style.height = "inherit";
-      const computed = window.getComputedStyle(textarea);
-      const height =
-        parseInt(computed.getPropertyValue("border-top-width"), 10) +
-        parseInt(computed.getPropertyValue("border-bottom-width"), 10) +
-        textarea.scrollHeight;
-
-      textarea.style.height = `${height}px`;
-    }
-  };
-
+  // Auto-scroll to bottom only during streaming
   useEffect(() => {
-    adjustTextareaHeight();
-  }, [input]);
+    if (isStreaming || stagingMessage) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isStreaming, stagingMessage, activeChat?.messages]);
 
+  // Auto-focus input
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeChat?.history, isLoading]);
+  const createNewChat = () => {
+    const newChat = {
+      id: Date.now().toString(),
+      title: "New Article",
+      messages: [],
+    };
+    setChats((current) => [newChat, ...current]);
+    setActiveChat(newChat);
+  };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (!isStreaming && input.trim()) {
-        handleSubmit();
+  const deleteChat = (id: string) => {
+    setChats((current) => {
+      const filtered = current.filter((c) => c.id !== id);
+      // If we're deleting the active chat, set the first remaining chat as active
+      if (activeChat?.id === id && filtered.length > 0) {
+        setActiveChat(filtered[0]);
       }
-    }
+      // If this was the last chat, create a new one
+      if (filtered.length === 0) {
+        const newChat = {
+          id: Date.now().toString(),
+          title: "New Article",
+          messages: [],
+        };
+        setActiveChat(newChat);
+        return [newChat];
+      }
+      return filtered;
+    });
+  };
+
+  const updateActiveChat = (messages: Message[]) => {
+    if (!activeChat) return;
+
+    const updatedChat = { ...activeChat, messages };
+    setActiveChat(updatedChat);
+    setChats((current) =>
+      current.map((chat) => (chat.id === activeChat.id ? updatedChat : chat))
+    );
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isStreaming || !activeChat) return;
 
-    const isFirstPrompt = activeChat.history.length === 0;
     const prompt = input;
     setInput("");
-    setHasStreamStarted(false);
 
-    // Create a clean title from the prompt if this is the first one
-    if (isFirstPrompt) {
-      updateActiveChat({ title: prompt });
+    // If this is the first message, use it as the chat title
+    if (activeChat.messages.length === 0) {
+      const updatedChat = { ...activeChat, title: prompt };
+      setActiveChat(updatedChat);
+      setChats((current) =>
+        current.map((chat) => (chat.id === activeChat.id ? updatedChat : chat))
+      );
     }
 
-    // Add prompt to history
-    updateActiveChat({
-      history: [
-        ...activeChat.history,
-        {
-          type: "prompt" as const,
-          content: prompt,
-          timestamp: new Date(),
-        },
-      ],
-    });
+    // Add prompt to messages
+    const promptMessage = { type: "prompt" as const, content: prompt };
+    const updatedMessages = [...activeChat.messages, promptMessage];
+    updateActiveChat(updatedMessages);
 
-    let streamedContent = "";
-    let streamedCitations: Citation[] = [];
+    // Create staging message for streaming
+    const draftMessage = {
+      type: "draft" as const,
+      content: "",
+      citations: [] as Citation[],
+    };
+    setStagingMessage(draftMessage);
+
+    let content = "";
+    let citations: Citation[] = [];
 
     try {
       await streamRequest(
@@ -112,222 +182,295 @@ export default function DraftArticlePage() {
         },
         (data) => {
           if (data.content) {
-            streamedContent += data.content;
-            setHasStreamStarted(true);
+            content += data.content;
+            setStagingMessage((current) =>
+              current
+                ? { ...current, content: content.trim(), citations }
+                : null
+            );
           }
           if (data.citations) {
-            streamedCitations = [...streamedCitations, ...data.citations];
+            citations = [...citations, ...data.citations];
           }
-
-          // Update or create draft with accumulated content
-          updateActiveChat({
-            history: [
-              ...activeChat.history,
-              {
-                type: "prompt" as const,
-                content: prompt,
-                timestamp: new Date(),
-              },
-              {
-                type: "draft" as const,
-                content: streamedContent,
-                citations: streamedCitations,
-                timestamp: new Date(),
-                isLatest: true,
-              },
-            ],
-            expandedDraftIndex: activeChat.history.length + 1,
-          });
         }
       );
-    } catch (error) {
-      console.error("Error during streaming:", error);
+
+      // Commit the final message to chat history, preserving the prompt message
+      if (content) {
+        updateActiveChat([
+          ...updatedMessages, // Include the prompt message we added earlier
+          { ...draftMessage, content: content.trim(), citations },
+        ]);
+      }
+    } finally {
+      setStagingMessage(null);
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!activeChat) return;
-    const latestDraft = activeChat.history.findLast(
-      (item) => item.type === "draft"
-    );
+  const handleAnalyze = async (analysisPrompt: string) => {
+    if (isStreaming || !activeChat) return;
+
+    const latestDraft = [...activeChat.messages]
+      .reverse()
+      .find((m) => m.type === "draft");
     if (!latestDraft) return;
 
-    updateActiveChat({
-      history: [
-        ...activeChat.history,
-        {
-          type: "analysis",
-          content: "",
-          timestamp: new Date(),
-        },
-      ],
-      expandedDraftIndex: undefined,
-    });
+    // Add prompt to messages
+    const promptMessage = { type: "prompt" as const, content: "Analyze draft" };
+    updateActiveChat([...activeChat.messages, promptMessage]);
+
+    // Create staging message for analysis
+    const analysisMessage = { type: "analysis" as const, content: "" };
+    setStagingMessage(analysisMessage);
 
     let content = "";
 
-    await streamRequest(
-      {
-        task: "analyze",
-        prompt: latestDraft.content,
-        basePrompt: "Analyze this article draft and suggest improvements:",
-      },
-      (data) => {
-        if (data.content) {
-          content += data.content;
+    try {
+      await streamRequest(
+        {
+          task: "analyze",
+          prompt: latestDraft.content,
+          basePrompt: analysisPrompt,
+        },
+        (data) => {
+          if (data.content) {
+            content += data.content;
+            setStagingMessage((current) =>
+              current ? { ...current, content: content.trim() } : null
+            );
+          }
         }
+      );
 
-        updateActiveChat({
-          history: activeChat.history.map((item, index) =>
-            index === activeChat.history.length - 1 && item.type === "analysis"
-              ? {
-                  ...item,
-                  content,
-                }
-              : item
-          ),
-          expandedDraftIndex: undefined,
-        });
+      // Commit the final message to chat history
+      if (content) {
+        updateActiveChat([
+          ...activeChat.messages,
+          { ...analysisMessage, content: content.trim() },
+        ]);
       }
-    );
+    } finally {
+      setStagingMessage(null);
+    }
   };
 
   const handleApplyAnalysis = async () => {
-    if (!activeChat) return;
-    const latestAnalysis = activeChat.history.findLast(
-      (item) => item.type === "analysis"
-    );
-    const latestDraft = activeChat.history.findLast(
-      (item) => item.type === "draft"
-    );
-    if (!latestAnalysis || !latestDraft) return;
+    if (isStreaming || !activeChat) return;
 
-    updateActiveChat({
-      history: [
-        ...activeChat.history,
-        {
-          type: "draft",
-          content: "",
-          citations: [],
-          timestamp: new Date(),
-          isLatest: true,
-        },
-      ],
-      expandedDraftIndex: activeChat.history.length + 1,
-    });
+    const latestAnalysis = [...activeChat.messages]
+      .reverse()
+      .find((m) => m.type === "analysis");
+    if (!latestAnalysis) return;
+
+    // Add prompt to messages
+    const promptMessage = {
+      type: "prompt" as const,
+      content: "Apply analysis",
+    };
+    updateActiveChat([...activeChat.messages, promptMessage]);
+
+    // Create staging message for streaming
+    const draftMessage = {
+      type: "draft" as const,
+      content: "",
+      citations: [] as Citation[],
+    };
+    setStagingMessage(draftMessage);
 
     let content = "";
     let citations: Citation[] = [];
 
-    await streamRequest(
-      {
-        task: task.id,
-        prompt: `Apply these improvements to the article:\n${latestAnalysis.content}`,
-        basePrompt: task.basePrompt,
-      },
-      (data) => {
-        if (data.content) {
-          content += data.content;
+    try {
+      await streamRequest(
+        {
+          task: task.id,
+          prompt: `Apply these improvements to the article:\n${latestAnalysis.content}`,
+          basePrompt: task.basePrompt,
+        },
+        (data) => {
+          if (data.content) {
+            content += data.content;
+            setStagingMessage((current) =>
+              current
+                ? { ...current, content: content.trim(), citations }
+                : null
+            );
+          }
+          if (data.citations) {
+            citations = [...citations, ...data.citations];
+          }
         }
-        if (data.citations) {
-          citations = [...citations, ...data.citations];
-        }
+      );
 
-        updateActiveChat({
-          history: activeChat.history.map((item, index) =>
-            index === activeChat.history.length - 1 && item.type === "draft"
-              ? {
-                  ...item,
-                  content,
-                  citations,
-                }
-              : item
-          ),
-          expandedDraftIndex: activeChat.history.length - 1,
-        });
+      // Commit the final message to chat history
+      if (content) {
+        updateActiveChat([
+          ...activeChat.messages,
+          { ...draftMessage, content: content.trim(), citations },
+        ]);
       }
-    );
+    } finally {
+      setStagingMessage(null);
+    }
   };
 
-  const handleToggleExpand = (index: number, expanded: boolean) => {
-    if (!activeChat) return;
-    updateActiveChat({
-      expandedDraftIndex: expanded ? index : undefined,
-    });
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!isStreaming && input.trim()) {
+        handleSubmit();
+      }
+    }
   };
-
-  if (!activeChat) {
-    return null;
-  }
 
   return (
-    <div className="flex flex-1 min-h-[600px]">
-      <ArticleChatHistory />
+    <div className="flex flex-1 min-h-[600px] overflow-hidden">
+      <div className="w-64 border-r bg-gray-50/50 flex flex-col">
+        <div className="p-6 border-b">
+          <Button className="w-full" variant="outline" onClick={createNewChat}>
+            New Article
+          </Button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-2 p-4">
+            {chats.map((chat) => (
+              <div
+                key={chat.id}
+                className={`group flex items-start justify-between p-3 rounded-lg hover:bg-gray-100 cursor-pointer ${
+                  activeChat?.id === chat.id ? "bg-gray-100" : ""
+                }`}
+                onClick={() => setActiveChat(chat)}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {chat.title}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteChat(chat.id);
+                  }}
+                >
+                  <Cross2Icon className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {activeChat.history.map((item, index) => {
-                if (item.type === "prompt") {
-                  return (
-                    <div key={index} className="flex justify-end">
-                      <div className="bg-gray-200 text-gray-900 border border-gray-300 rounded-lg p-4 max-w-[80%]">
-                        <div className="whitespace-pre-wrap">
-                          {item.content}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {activeChat ? (
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4">
+                <div className="space-y-4">
+                  {activeChat.messages.map((msg, index) => {
+                    if (msg.type === "prompt") {
+                      return (
+                        <div key={index} className="flex justify-end">
+                          <div className="bg-gray-200 text-gray-900 border border-gray-300 rounded-lg p-4 max-w-[80%]">
+                            <div className="whitespace-pre-wrap">
+                              {msg.content}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    if (msg.type === "draft") {
+                      const isLatest =
+                        index === activeChat.messages.length - 1 ||
+                        activeChat.messages
+                          .slice(index + 1)
+                          .every((m) => m.type === "analysis");
+
+                      return (
+                        <div key={index} className="space-y-4">
+                          <div className="bg-white border rounded-lg p-4">
+                            <div className="prose max-w-none">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                            {isLatest && !isStreaming && msg.content && (
+                              <div className="mt-4 flex justify-end">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                      Analyze
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    {ANALYSIS_TYPES.map((type) => (
+                                      <DropdownMenuItem
+                                        key={type.id}
+                                        onClick={() =>
+                                          handleAnalyze(type.prompt)
+                                        }
+                                      >
+                                        {type.label}
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    if (msg.type === "analysis") {
+                      return (
+                        <div key={index} className="space-y-4">
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="prose max-w-none">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                            {msg.content && (
+                              <div className="mt-4 flex justify-end">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleApplyAnalysis}
+                                  disabled={isStreaming}
+                                >
+                                  Apply Changes
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })}
+                  {isStreaming && !stagingMessage?.content && (
+                    <LoadingBubbles />
+                  )}
+                  {stagingMessage?.content && (
+                    <div className="space-y-4">
+                      <div
+                        className={`${
+                          stagingMessage.type === "analysis"
+                            ? "bg-yellow-50 border border-yellow-200"
+                            : "bg-white border"
+                        } rounded-lg p-4`}
+                      >
+                        <div className="prose max-w-none">
+                          <ReactMarkdown>
+                            {stagingMessage.content}
+                          </ReactMarkdown>
                         </div>
                       </div>
                     </div>
-                  );
-                }
-
-                if (item.type === "draft") {
-                  const isLatest =
-                    index ===
-                    activeChat.history.filter((i) => i.type === "draft")
-                      .length -
-                      1;
-                  const draftNumber = activeChat.history.filter(
-                    (h, i) => h.type === "draft" && i <= index
-                  ).length;
-                  return (
-                    <ArticleMessage
-                      key={index}
-                      draft={{
-                        preview: item.content.slice(0, 100).trim(),
-                        content: item.content,
-                        timestamp: item.timestamp,
-                        citations: item.citations || [],
-                        isLatest,
-                      }}
-                      draftNumber={draftNumber}
-                      onAnalyze={isLatest ? handleAnalyze : undefined}
-                      isExpanded={index === activeChat.expandedDraftIndex}
-                      onToggleExpand={(expanded) =>
-                        handleToggleExpand(index, expanded)
-                      }
-                    />
-                  );
-                }
-
-                if (item.type === "analysis") {
-                  return (
-                    <AnalysisMessage
-                      key={index}
-                      analysis={{
-                        suggestions: [item.content],
-                        timestamp: item.timestamp,
-                      }}
-                      onApply={handleApplyAnalysis}
-                    />
-                  );
-                }
-              })}
-
-              {(isLoading || isStreaming) && !hasStreamStarted && (
-                <LoadingBubbles />
-              )}
-              <div ref={messagesEndRef} />
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="border-t bg-white">
@@ -336,9 +479,7 @@ export default function DraftArticlePage() {
                   <Textarea
                     ref={inputRef}
                     value={input}
-                    onChange={(e) => {
-                      setInput(e.target.value);
-                    }}
+                    onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Type your message..."
                     disabled={isStreaming}
@@ -346,19 +487,13 @@ export default function DraftArticlePage() {
                     rows={3}
                   />
                   <Button type="submit" disabled={isStreaming || !input.trim()}>
-                    {isStreaming ? (
-                      <span className="flex items-center space-x-2">
-                        <span>Sending...</span>
-                      </span>
-                    ) : (
-                      "Send"
-                    )}
+                    {isStreaming ? "Sending..." : "Send"}
                   </Button>
                 </div>
               </form>
             </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

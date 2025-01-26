@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChatMessage, Citation } from "../app/utils/types";
 import { getAuthHeader } from "../app/utils/auth-utils";
 import * as Sentry from "@sentry/nextjs";
+import { API_ENDPOINTS } from "../app/utils/config";
 
 interface UsePineconeStreamOptions {
   onStart?: () => void;
@@ -64,7 +65,7 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
         headers.Authorization = authHeader;
       }
 
-      const response = await fetch("/api/generate", {
+      const response = await fetch(API_ENDPOINTS.generate, {
         method: "POST",
         headers,
         body: JSON.stringify(requestData),
