@@ -15,14 +15,25 @@ export interface ChatMessage {
 
 export interface Citation {
   text: string;
-  source: string;
-  position?: number;
-  references?: string[];
+  url: string;
+}
+
+export interface Message {
+  type: "prompt" | "draft" | "analysis";
+  content: string;
+  timestamp: Date;
+  citations?: Citation[];
+}
+
+export interface Chat {
+  id: string;
+  title: string;
+  messages: Message[];
 }
 
 export interface ApiResponse {
-  content: string;
-  citations: Citation[];
+  content?: string;
+  citations?: Citation[];
 }
 
 export interface StreamChunk {

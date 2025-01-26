@@ -15,11 +15,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import { ChatHistory } from "@/app/components/ChatHistory";
+import { ArticleDraftMessage } from "@/app/components/ArticleDraftMessage";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 interface Message {
   type: "prompt" | "draft" | "analysis";
   content: string;
   citations?: Citation[];
+  timestamp: Date;
 }
 
 interface Chat {
@@ -157,8 +161,12 @@ export default function DraftArticlePage() {
       );
     }
 
-    // Add prompt to messages
-    const promptMessage = { type: "prompt" as const, content: prompt };
+    // Add user prompt to messages
+    const promptMessage = {
+      type: "prompt" as const,
+      content: prompt,
+      timestamp: new Date(),
+    };
     const updatedMessages = [...activeChat.messages, promptMessage];
     updateActiveChat(updatedMessages);
 
@@ -166,6 +174,7 @@ export default function DraftArticlePage() {
     const draftMessage = {
       type: "draft" as const,
       content: "",
+      timestamp: new Date(),
       citations: [] as Citation[],
     };
     setStagingMessage(draftMessage);
@@ -216,11 +225,19 @@ export default function DraftArticlePage() {
     if (!latestDraft) return;
 
     // Add prompt to messages
-    const promptMessage = { type: "prompt" as const, content: "Analyze draft" };
+    const promptMessage = {
+      type: "prompt" as const,
+      content: "Analyze draft",
+      timestamp: new Date(),
+    };
     updateActiveChat([...activeChat.messages, promptMessage]);
 
     // Create staging message for analysis
-    const analysisMessage = { type: "analysis" as const, content: "" };
+    const analysisMessage = {
+      type: "analysis" as const,
+      content: "",
+      timestamp: new Date(),
+    };
     setStagingMessage(analysisMessage);
 
     let content = "";
@@ -266,6 +283,7 @@ export default function DraftArticlePage() {
     const promptMessage = {
       type: "prompt" as const,
       content: "Apply analysis",
+      timestamp: new Date(),
     };
     updateActiveChat([...activeChat.messages, promptMessage]);
 
@@ -273,6 +291,7 @@ export default function DraftArticlePage() {
     const draftMessage = {
       type: "draft" as const,
       content: "",
+      timestamp: new Date(),
       citations: [] as Citation[],
     };
     setStagingMessage(draftMessage);
@@ -325,43 +344,13 @@ export default function DraftArticlePage() {
 
   return (
     <div className="flex flex-1 min-h-[600px] overflow-hidden">
-      <div className="w-64 border-r bg-gray-50/50 flex flex-col">
-        <div className="p-6 border-b">
-          <Button className="w-full" variant="outline" onClick={createNewChat}>
-            New Article
-          </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="space-y-2 p-4">
-            {chats.map((chat) => (
-              <div
-                key={chat.id}
-                className={`group flex items-start justify-between p-3 rounded-lg hover:bg-gray-100 cursor-pointer ${
-                  activeChat?.id === chat.id ? "bg-gray-100" : ""
-                }`}
-                onClick={() => setActiveChat(chat)}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {chat.title}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="opacity-0 group-hover:opacity-100"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteChat(chat.id);
-                  }}
-                >
-                  <Cross2Icon className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <ChatHistory
+        chats={chats}
+        activeChat={activeChat}
+        onSelectChat={setActiveChat}
+        onDeleteChat={deleteChat}
+        onNewChat={createNewChat}
+      />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {activeChat ? (
@@ -389,36 +378,27 @@ export default function DraftArticlePage() {
                           .slice(index + 1)
                           .every((m) => m.type === "analysis");
 
+                      // Count previous drafts for numbering
+                      const draftNumber = activeChat.messages
+                        .slice(0, index + 1)
+                        .filter((m) => m.type === "draft").length;
+
                       return (
-                        <div key={index} className="space-y-4">
-                          <div className="bg-white border rounded-lg p-4">
-                            <div className="prose max-w-none">
-                              <ReactMarkdown>{msg.content}</ReactMarkdown>
-                            </div>
-                            {isLatest && !isStreaming && msg.content && (
-                              <div className="mt-4 flex justify-end">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm">
-                                      Analyze
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    {ANALYSIS_TYPES.map((type) => (
-                                      <DropdownMenuItem
-                                        key={type.id}
-                                        onClick={() =>
-                                          handleAnalyze(type.prompt)
-                                        }
-                                      >
-                                        {type.label}
-                                      </DropdownMenuItem>
-                                    ))}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            )}
-                          </div>
+                        <div
+                          key={index}
+                          className="draft-message"
+                          style={{ counterReset: `draft ${draftNumber}` }}
+                        >
+                          <ArticleDraftMessage
+                            content={msg.content}
+                            timestamp={msg.timestamp}
+                            citations={msg.citations}
+                            isLatest={isLatest}
+                            isStreaming={isStreaming}
+                            onAnalyze={handleAnalyze}
+                            analysisTypes={ANALYSIS_TYPES}
+                            draftNumber={draftNumber}
+                          />
                         </div>
                       );
                     }
@@ -453,29 +433,28 @@ export default function DraftArticlePage() {
                     <LoadingBubbles />
                   )}
                   {stagingMessage?.content && (
-                    <div className="space-y-4">
-                      <div
-                        className={`${
-                          stagingMessage.type === "analysis"
-                            ? "bg-yellow-50 border border-yellow-200"
-                            : "bg-white border"
-                        } rounded-lg p-4`}
-                      >
-                        <div className="prose max-w-none">
-                          <ReactMarkdown>
-                            {stagingMessage.content}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    </div>
+                    <ArticleDraftMessage
+                      content={stagingMessage.content}
+                      timestamp={stagingMessage.timestamp}
+                      citations={stagingMessage.citations}
+                      isLatest={true}
+                      isStreaming={isStreaming}
+                      onAnalyze={handleAnalyze}
+                      analysisTypes={ANALYSIS_TYPES}
+                      draftNumber={
+                        activeChat.messages.filter((m) => m.type === "draft")
+                          .length + 1
+                      }
+                    />
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
               </div>
             </div>
 
-            <div className="border-t bg-white">
+            <div className="bg-white">
               <form onSubmit={handleSubmit} className="p-4">
-                <div className="flex space-x-2">
+                <div className="flex flex-col space-y-2">
                   <Textarea
                     ref={inputRef}
                     value={input}
@@ -486,7 +465,11 @@ export default function DraftArticlePage() {
                     className="min-h-[88px] max-h-[176px] resize-none overflow-y-auto"
                     rows={3}
                   />
-                  <Button type="submit" disabled={isStreaming || !input.trim()}>
+                  <Button
+                    type="submit"
+                    disabled={isStreaming || !input.trim()}
+                    className="self-end"
+                  >
                     {isStreaming ? "Sending..." : "Send"}
                   </Button>
                 </div>
