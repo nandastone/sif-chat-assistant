@@ -36,7 +36,8 @@ interface Chat {
 
 // Helper function to extract title from markdown content
 const extractTitleFromMarkdown = (content: string): string | null => {
-  const h1Match = content.match(/^#\s+(.+)$/m);
+  // Match # style H1 header anywhere in the document
+  const h1Match = content.match(/^[ \t]*# (.+)$/m);
   return h1Match ? h1Match[1].trim() : null;
 };
 
