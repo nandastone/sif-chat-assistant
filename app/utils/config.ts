@@ -98,7 +98,9 @@ The article should read as a direct teaching piece, rich with quotes and example
     id: "draft-article",
     name: "Draft Article (Chat)",
     description: "Generate and refine article drafts through chat",
-    basePrompt: `Create an engaging article that presents these teachings clearly and naturally.
+    basePrompt: `Always generate the COMPLETE article in each response, even when suggesting improvements to specific sections. Never output just a section or partial update.
+
+If providing any contextual explanation about changes or approach, place it above the article separated by a markdown horizontal rule (---).
 
 Source Material Usage:
 - Writing style: Follow approach of documents marked Usage: "style_guide" (opening style, metaphors, progression of ideas)
@@ -114,7 +116,9 @@ Article Requirements:
 - Integrate quotes naturally into the discussion
 - Maintain clear flow between concepts
 
-The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.`,
+The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.
+
+IMPORTANT: Each response must contain the entire article from start to finish. When suggesting improvements or refinements to specific sections, still output the complete article with those changes incorporated.`,
     outputType: "article",
   },
 ];
