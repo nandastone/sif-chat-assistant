@@ -19,12 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="min-h-screen flex flex-col">
-          <header className="container mx-auto p-4 max-w-4xl">
-            <h1 className="text-3xl font-bold">SIF.yoga Research Assistant</h1>
-          </header>
-
           <main className="flex-1 mb-4">{children}</main>
-
           <Footer />
         </div>
       </body>

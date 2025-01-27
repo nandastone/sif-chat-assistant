@@ -1,4 +1,11 @@
+import { shouldEnforceAuth } from "./config";
+
 export async function getAuthHeader(): Promise<string> {
+  // Skip auth header in development unless explicitly enabled
+  if (!shouldEnforceAuth) {
+    return "";
+  }
+
   // Make a test request to our own API to get the auth header
   const response = await fetch("/api/auth-test");
   if (!response.ok) {

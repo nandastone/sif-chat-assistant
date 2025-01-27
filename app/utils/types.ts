@@ -1,5 +1,5 @@
 export interface Task {
-  id: "research" | "article" | "qa";
+  id: "research" | "article" | "qa" | "draft-article";
   name: string;
   description: string;
   basePrompt: string;
@@ -14,20 +14,27 @@ export interface ChatMessage {
 }
 
 export interface Citation {
-  position: number;
-  references: {
-    pages: number[];
-    file: {
-      name: string;
-      id: string;
-      url: string;
-    };
-  }[];
+  text: string;
+  url: string;
+}
+
+export interface Message {
+  type: "prompt" | "draft" | "analysis";
+  content: string;
+  timestamp: Date;
+  citations?: Citation[];
+}
+
+export interface Chat {
+  id: string;
+  title: string;
+  messages: Message[];
+  timestamp: Date;
 }
 
 export interface ApiResponse {
-  content: string;
-  citations: Citation[];
+  content?: string;
+  citations?: Citation[];
 }
 
 export interface StreamChunk {
@@ -44,4 +51,13 @@ export interface StreamChunk {
     completion_tokens: number;
     total_tokens: number;
   };
+}
+
+export interface MessageItem {
+  type: "prompt" | "draft" | "analysis";
+  content: string;
+  timestamp: Date;
+  citations?: Citation[];
+  isLatest?: boolean;
+  analysisType?: string;
 }

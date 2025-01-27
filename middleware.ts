@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { shouldEnforceAuth } from "./app/utils/config";
 
 export function middleware(request: NextRequest) {
+  if (!shouldEnforceAuth) {
+    return NextResponse.next();
+  }
+
   const basicAuth = request.headers.get("authorization");
 
   if (basicAuth) {

@@ -11,7 +11,7 @@ export default function TasksLayout({
   return (
     <div className="space-y-8">
       <TaskNav tasks={TASKS} />
-      <div className="container mx-auto px-4 max-w-4xl">{children}</div>
+      <div className="container mx-auto px-4 max-w-7xl">{children}</div>
     </div>
   );
 }
