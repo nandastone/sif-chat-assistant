@@ -29,6 +29,7 @@ export interface Chat {
   id: string;
   title: string;
   messages: Message[];
+  timestamp: Date;
 }
 
 export interface ApiResponse {

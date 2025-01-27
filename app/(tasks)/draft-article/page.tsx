@@ -17,6 +17,7 @@ import {
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { ChatHistory } from "@/app/components/ChatHistory";
 import { ArticleDraftMessage } from "@/app/components/ArticleDraftMessage";
+import { AnalysisMessage } from "@/app/components/AnalysisMessage";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 interface Message {
@@ -30,6 +31,7 @@ interface Chat {
   id: string;
   title: string;
   messages: Message[];
+  timestamp: Date;
 }
 
 const ANALYSIS_TYPES = [
@@ -53,6 +55,12 @@ const ANALYSIS_TYPES = [
   },
 ];
 
+// Helper function to extract title from markdown content
+const extractTitleFromMarkdown = (content: string): string | null => {
+  const h1Match = content.match(/^#\s+(.+)$/m);
+  return h1Match ? h1Match[1].trim() : null;
+};
+
 export default function DraftArticlePage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
@@ -63,34 +71,40 @@ export default function DraftArticlePage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load chats from localStorage
-  useEffect(() => {
-    const savedChats = localStorage.getItem("chats");
-    if (savedChats) {
-      const parsed = JSON.parse(savedChats);
-      setChats(parsed);
-      // Set the first chat as active if none is active
-      if (parsed.length > 0) {
-        setActiveChat(parsed[0]);
-      }
-    } else {
-      // Create initial chat
-      const newChat = {
-        id: Date.now().toString(),
-        title: "New Article",
-        messages: [],
-      };
-      setChats([newChat]);
-      setActiveChat(newChat);
-    }
-  }, []);
-
   // Save chats to localStorage whenever they change
   useEffect(() => {
     if (chats.length > 0) {
       localStorage.setItem("chats", JSON.stringify(chats));
     }
   }, [chats]);
+
+  // Load chats from localStorage
+  useEffect(() => {
+    const savedChats = localStorage.getItem("chats");
+    if (savedChats) {
+      try {
+        const parsed = JSON.parse(savedChats);
+        // Ensure we have valid chat data
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setChats(parsed);
+          setActiveChat(parsed[0]);
+          return;
+        }
+      } catch (e) {
+        console.error("Error parsing saved chats:", e);
+      }
+    }
+
+    // Create initial chat if no valid chats found
+    const newChat = {
+      id: Date.now().toString(),
+      title: "Draft Article",
+      messages: [],
+      timestamp: new Date(),
+    };
+    setChats([newChat]);
+    setActiveChat(newChat);
+  }, []);
 
   // Auto-scroll to bottom only during streaming
   useEffect(() => {
@@ -107,8 +121,9 @@ export default function DraftArticlePage() {
   const createNewChat = () => {
     const newChat = {
       id: Date.now().toString(),
-      title: "New Article",
+      title: "Draft Article",
       messages: [],
+      timestamp: new Date(),
     };
     setChats((current) => [newChat, ...current]);
     setActiveChat(newChat);
@@ -125,8 +140,9 @@ export default function DraftArticlePage() {
       if (filtered.length === 0) {
         const newChat = {
           id: Date.now().toString(),
-          title: "New Article",
+          title: "Draft Article",
           messages: [],
+          timestamp: new Date(),
         };
         setActiveChat(newChat);
         return [newChat];
@@ -138,7 +154,15 @@ export default function DraftArticlePage() {
   const updateActiveChat = (messages: Message[]) => {
     if (!activeChat) return;
 
-    const updatedChat = { ...activeChat, messages };
+    // Find the latest draft message
+    const latestDraft = [...messages].reverse().find((m) => m.type === "draft");
+
+    // Extract title from the latest draft if it exists
+    const title = latestDraft
+      ? extractTitleFromMarkdown(latestDraft.content) || activeChat.title
+      : activeChat.title;
+
+    const updatedChat = { ...activeChat, messages, title };
     setActiveChat(updatedChat);
     setChats((current) =>
       current.map((chat) => (chat.id === activeChat.id ? updatedChat : chat))
@@ -151,15 +175,6 @@ export default function DraftArticlePage() {
 
     const prompt = input;
     setInput("");
-
-    // If this is the first message, use it as the chat title
-    if (activeChat.messages.length === 0) {
-      const updatedChat = { ...activeChat, title: prompt };
-      setActiveChat(updatedChat);
-      setChats((current) =>
-        current.map((chat) => (chat.id === activeChat.id ? updatedChat : chat))
-      );
-    }
 
     // Add user prompt to messages
     const promptMessage = {
@@ -224,14 +239,6 @@ export default function DraftArticlePage() {
       .find((m) => m.type === "draft");
     if (!latestDraft) return;
 
-    // Add prompt to messages
-    const promptMessage = {
-      type: "prompt" as const,
-      content: "Analyze draft",
-      timestamp: new Date(),
-    };
-    updateActiveChat([...activeChat.messages, promptMessage]);
-
     // Create staging message for analysis
     const analysisMessage = {
       type: "analysis" as const,
@@ -278,14 +285,6 @@ export default function DraftArticlePage() {
       .reverse()
       .find((m) => m.type === "analysis");
     if (!latestAnalysis) return;
-
-    // Add prompt to messages
-    const promptMessage = {
-      type: "prompt" as const,
-      content: "Apply analysis",
-      timestamp: new Date(),
-    };
-    updateActiveChat([...activeChat.messages, promptMessage]);
 
     // Create staging message for streaming
     const draftMessage = {
@@ -404,26 +403,17 @@ export default function DraftArticlePage() {
                     }
 
                     if (msg.type === "analysis") {
+                      const isLatest = index === activeChat.messages.length - 1;
                       return (
-                        <div key={index} className="space-y-4">
-                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <div className="prose max-w-none">
-                              <ReactMarkdown>{msg.content}</ReactMarkdown>
-                            </div>
-                            {msg.content && (
-                              <div className="mt-4 flex justify-end">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={handleApplyAnalysis}
-                                  disabled={isStreaming}
-                                >
-                                  Apply Changes
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                        <AnalysisMessage
+                          key={index}
+                          content={msg.content}
+                          timestamp={msg.timestamp}
+                          isLatest={isLatest}
+                          isStreaming={isStreaming}
+                          onApply={handleApplyAnalysis}
+                          analysisType="Suggested Improvements"
+                        />
                       );
                     }
 
@@ -432,21 +422,31 @@ export default function DraftArticlePage() {
                   {isStreaming && !stagingMessage?.content && (
                     <LoadingBubbles />
                   )}
-                  {stagingMessage?.content && (
-                    <ArticleDraftMessage
-                      content={stagingMessage.content}
-                      timestamp={stagingMessage.timestamp}
-                      citations={stagingMessage.citations}
-                      isLatest={true}
-                      isStreaming={isStreaming}
-                      onAnalyze={handleAnalyze}
-                      analysisTypes={ANALYSIS_TYPES}
-                      draftNumber={
-                        activeChat.messages.filter((m) => m.type === "draft")
-                          .length + 1
-                      }
-                    />
-                  )}
+                  {stagingMessage?.content &&
+                    (stagingMessage.type === "analysis" ? (
+                      <AnalysisMessage
+                        content={stagingMessage.content}
+                        timestamp={stagingMessage.timestamp}
+                        isLatest={true}
+                        isStreaming={isStreaming}
+                        onApply={handleApplyAnalysis}
+                        analysisType="Suggested Improvements"
+                      />
+                    ) : (
+                      <ArticleDraftMessage
+                        content={stagingMessage.content}
+                        timestamp={stagingMessage.timestamp}
+                        citations={stagingMessage.citations}
+                        isLatest={true}
+                        isStreaming={isStreaming}
+                        onAnalyze={handleAnalyze}
+                        analysisTypes={ANALYSIS_TYPES}
+                        draftNumber={
+                          activeChat.messages.filter((m) => m.type === "draft")
+                            .length + 1
+                        }
+                      />
+                    ))}
                   <div ref={messagesEndRef} />
                 </div>
               </div>

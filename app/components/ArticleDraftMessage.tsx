@@ -57,29 +57,27 @@ export function ArticleDraftMessage({
             </span>
           </div>
         </div>
-        {isLatest && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isStreaming || !content}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!isLatest || isStreaming || !content}
+            >
+              Analyze
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {analysisTypes.map((type) => (
+              <DropdownMenuItem
+                key={type.id}
+                onClick={() => onAnalyze(type.prompt)}
               >
-                Analyze
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {analysisTypes.map((type) => (
-                <DropdownMenuItem
-                  key={type.id}
-                  onClick={() => onAnalyze(type.prompt)}
-                >
-                  {type.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+                {type.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       {isExpanded && (
         <div className="p-4">
