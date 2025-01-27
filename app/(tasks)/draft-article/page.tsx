@@ -98,6 +98,13 @@ export default function DraftArticlePage() {
     inputRef.current?.focus();
   }, []);
 
+  // Focus input after streaming completes
+  useEffect(() => {
+    if (!isStreaming) {
+      inputRef.current?.focus();
+    }
+  }, [isStreaming]);
+
   const createNewChat = () => {
     const newChat = {
       id: Date.now().toString(),

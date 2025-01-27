@@ -5,20 +5,27 @@ export const TASKS: Task[] = [
     id: "qa",
     name: "Q&A Chat",
     description: "Have a conversation with contextual search and analysis",
-    basePrompt: `Answer questions by finding and sharing relevant teachings from the source materials.
+    basePrompt: `Answer questions based on what you find in the available materials. Share what you find directly and naturally.
 
-When responding:
-1. Lead with the most relevant quote(s) that directly answer the question
-2. Provide brief context if needed to understand the quote
-3. Keep responses clear and focused on what was asked
-4. Include proper citations
+You are presenting teachings found in these materials - not creating new interpretations or adding external information. Share both:
+- The direct information or events described
+- The spiritual understanding or significance explained in the materials
 
-Source Material Usage:
-- Primary: Use teachings from Jagad Guru Siddhaswarupananda
-- Supporting: Include relevant teachings from Bhaktivedanta Swami when they directly support the point
-- Citations: Reference source documents for all quotes
+When answering:
+1. Share the relevant information you find, including complete quotes
+2. Include both factual details and their spiritual meaning when available
+3. If you find something related but not exact, explain the connection
+4. If you don't find anything relevant, just say so simply - don't speculate
+5. Include sources at the end
 
-Keep responses direct and focused. If the question requires deeper exploration, wait for follow-up questions rather than providing extensive detail upfront.`,
+Present what you find in the materials:
+- If you find a clear answer, share it directly
+- If spiritual significance is explained, include that understanding
+- If you find related information, explain the connection
+- If you find nothing relevant, just say so
+- Don't add external knowledge or speculation
+
+Format quotes using markdown quote syntax (>) and include clear citations.`,
     outputType: "chat",
   },
   {
@@ -127,8 +134,31 @@ export const ANALYSIS_TYPES = [
   {
     id: "wikipedia",
     label: "Wikipedia Guidelines",
-    prompt:
-      "Analyze this article for its potential as a Wikipedia reference and provide specific recommendations to enhance its credibility. Identify areas requiring: additional third-party citations, removal of promotional language, balancing of viewpoints, and verification of factual claims. Suggest concrete improvements to meet Wikipedia's reliable source standards for independence, editorial oversight, and fact-based reporting.",
+    prompt: `Analyze this article for its potential as a Wikipedia reference and provide specific recommendations to enhance its credibility. Identify areas requiring: additional third-party citations, removal of promotional language, balancing of viewpoints, and verification of factual claims. Suggest concrete improvements to meet Wikipedia's reliable source standards for independence, editorial oversight, and fact-based reporting.`,
+  },
+  {
+    id: "cultural_sensitivity",
+    label: "Cultural Sensitivity Review",
+    prompt: `Review this content specifically for topics that may be considered sensitive or controversial in modern Western society. Focus on:
+
+- Gender roles and relationships
+- LGBTQ+ topics
+- Marriage and family structure
+- Women's roles and rights
+- Mental health approaches
+- Alternative medicine
+- Reproductive rights
+- Medical choices
+- Traditional social structures
+- Cultural practices
+
+For each identified topic:
+- Quote the specific passage
+- Explain why it might be considered sensitive
+- Note if additional context might be helpful
+- Flag any potentially controversial statements
+
+Be direct and specific. Focus only on content that could be considered controversial in current Western social discourse. Don't analyze general spiritual concepts or practices unless they directly intersect with these modern social issues.`,
   },
 ];
 
