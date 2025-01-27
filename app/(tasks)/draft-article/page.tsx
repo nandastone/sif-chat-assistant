@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Citation } from "@/app/utils/types";
-import { TASKS } from "@/app/utils/config";
+import { TASKS, ANALYSIS_TYPES } from "@/app/utils/config";
 import { usePineconeStream } from "@/hooks/use-pinecone-stream";
 import { LoadingBubbles } from "@/app/components/LoadingBubbles";
 import {
@@ -33,27 +33,6 @@ interface Chat {
   messages: Message[];
   timestamp: Date;
 }
-
-const ANALYSIS_TYPES = [
-  {
-    id: "wikipedia",
-    label: "Wikipedia Guidelines",
-    prompt:
-      "Evaluate this article's suitability as a Wikipedia reference based on the following criteria: reliability of the publisher/author, independence from the subject, factual accuracy, and third-party verification. Check if it meets Wikipedia's requirements for reliable sources, including editorial oversight and reputation.",
-  },
-  {
-    id: "completeness",
-    label: "Check Completeness",
-    prompt:
-      "Analyze if this article covers all key aspects of the topic. Identify any missing important points or areas that need more depth.",
-  },
-  {
-    id: "clarity",
-    label: "Check Clarity & Structure",
-    prompt:
-      "Analyze this article for clarity, structure, and flow. Suggest specific improvements to make the content more clear and engaging.",
-  },
-];
 
 // Helper function to extract title from markdown content
 const extractTitleFromMarkdown = (content: string): string | null => {

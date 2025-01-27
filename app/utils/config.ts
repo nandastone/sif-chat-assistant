@@ -137,6 +137,15 @@ For analysis and refinement:
   },
 ];
 
+export const ANALYSIS_TYPES = [
+  {
+    id: "wikipedia",
+    label: "Wikipedia Guidelines",
+    prompt:
+      "Analyze this article for its potential as a Wikipedia reference and provide specific recommendations to enhance its credibility. Identify areas requiring: additional third-party citations, removal of promotional language, balancing of viewpoints, and verification of factual claims. Suggest concrete improvements to meet Wikipedia's reliable source standards for independence, editorial oversight, and fact-based reporting.",
+  },
+];
+
 export const shouldEnforceAuth =
   process.env.NODE_ENV === "production" || process.env.ENFORCE_AUTH === "true";
 
