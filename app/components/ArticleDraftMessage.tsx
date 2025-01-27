@@ -9,6 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import CitationsList from "./CitationsList";
+import { processContentWithCitations } from "../utils/citation-utils";
 
 interface ArticleDraftMessageProps {
   content: string;
@@ -24,7 +26,7 @@ interface ArticleDraftMessageProps {
 export function ArticleDraftMessage({
   content,
   timestamp,
-  citations,
+  citations = [],
   isLatest,
   isStreaming,
   onAnalyze,
@@ -32,6 +34,11 @@ export function ArticleDraftMessage({
   draftNumber,
 }: ArticleDraftMessageProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const processedContent =
+    citations && citations.length > 0
+      ? processContentWithCitations(content, citations)
+      : content;
 
   return (
     <div className="bg-white border rounded-lg">
@@ -82,7 +89,13 @@ export function ArticleDraftMessage({
       {isExpanded && (
         <div className="p-4">
           <div className="prose max-w-none">
-            <ReactMarkdown>{content}</ReactMarkdown>
+            <ReactMarkdown>{processedContent}</ReactMarkdown>
+            {citations && citations.length > 0 && (
+              <CitationsList
+                citations={citations}
+                className="mt-4 pt-4 border-t border-gray-200"
+              />
+            )}
           </div>
         </div>
       )}

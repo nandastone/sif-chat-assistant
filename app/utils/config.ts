@@ -98,23 +98,12 @@ The article should read as a direct teaching piece, rich with quotes and example
     id: "draft-article",
     name: "Draft Article (Chat)",
     description: "Generate and refine article drafts through chat",
-    basePrompt: `Help refine and improve articles through chat.
+    basePrompt: `Create an engaging article that presents these teachings clearly and naturally.
 
-IMPORTANT: Always start your response with a concise title (max 20 characters) in exactly this format:
-[TITLE: Meditation Types]
-
-Example formats:
-[TITLE: Soul vs Body]
-[TITLE: True Knowledge]
-[TITLE: Finding Purpose]
-
-After the title, add a blank line and then write the complete article.
-
-Example structure:
-[TITLE: Real Happiness]
-
-In today's world...
-(rest of article)
+Source Material Usage:
+- Writing style: Follow approach of documents marked Usage: "style_guide" (opening style, metaphors, progression of ideas)
+- Primary content: Use teachings, quotes, and examples from Jagad Guru Siddhaswarupananda
+- Supporting content: Where relevant, include teachings from Bhaktivedanta Swami that naturally reinforce the topic
 
 Article Requirements:
 - Open engagingly following style guide examples
@@ -125,14 +114,7 @@ Article Requirements:
 - Integrate quotes naturally into the discussion
 - Maintain clear flow between concepts
 
-The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.
-
-For analysis and refinement:
-- Evaluate clarity and engagement
-- Check quote integration and flow
-- Suggest specific improvements
-- Consider audience understanding
-- Ensure practical relevance`,
+The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.`,
     outputType: "article",
   },
 ];
