@@ -61,3 +61,11 @@ export interface MessageItem {
   isLatest?: boolean;
   analysisType?: string;
 }
+
+export interface ChatRequest {
+  task: string;
+  prompt?: string;
+  basePrompt?: string;
+  messages?: ChatMessage[];
+  includeSpiritSoulDraft?: boolean;
+}

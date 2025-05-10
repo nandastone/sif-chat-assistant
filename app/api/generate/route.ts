@@ -22,7 +22,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const { task, prompt, basePrompt, messages } = await request.json();
+    const { task, prompt, basePrompt, messages, includeSpiritSoulDraft } =
+      await request.json();
     const { apiKey, assistantName } = await checkAssistantPrerequisites();
 
     if (!apiKey || !assistantName) {
@@ -39,23 +40,41 @@ export async function POST(request: Request) {
       );
     }
 
+    const spiritSoulDraftInstructions = includeSpiritSoulDraft
+      ? `\n\nInclude information from the "Spirit Soul: 5 Secrets to Finding Real Peace, Happiness, and Purpose" document in your response.`
+      : `\n\n❌ NEVER include information from the "Spirit Soul: 5 Secrets to Finding Real Peace, Happiness, and Purpose" document.`;
+
     let chatMessages: ChatMessage[];
+
     if (messages) {
-      chatMessages = messages;
+      // If first message is from assistant, just append formatting and spirit soul draft instructions.
+      if (messages[0]?.role === "assistant") {
+        chatMessages = [
+          {
+            role: "assistant",
+            content: `${messages[0].content}\n\n${spiritSoulDraftInstructions}`,
+          },
+          ...messages.slice(1),
+        ];
+      } else {
+        chatMessages = messages;
+      }
     } else {
-      const formattingInstructions = `
-Format your response in clear markdown with proper headings:
-- Use # for main headings
-- Use ## for subheadings
-- Use ### for sub-subheadings
-- Use proper markdown for lists, quotes, and emphasis
-- Structure the content hierarchically with clear sections
-`;
-      const fullPrompt = basePrompt
-        ? `[Base Prompt]\n${basePrompt}\n\n[Formatting]\n${formattingInstructions}\n\n[User Query]\n${prompt}`
-        : `${formattingInstructions}\n\n${prompt}`;
-      chatMessages = [{ role: "user", content: fullPrompt }];
+      // Build single message from prompt, always including base prompt.
+      const sections = [
+        `[Base Prompt]\n${basePrompt}`,
+        `[Further Instructions]\n${spiritSoulDraftInstructions}`,
+        `[User Query]\n${prompt}`,
+      ];
+      chatMessages = [
+        {
+          role: "user",
+          content: sections.join("\n\n"),
+        },
+      ];
     }
+
+    console.debug("Chat messages", chatMessages);
 
     const pineconeResponse = await fetch(
       `https://prod-1-data.ke.pinecone.io/assistant/chat/${assistantName}`,

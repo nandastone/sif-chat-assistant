@@ -98,7 +98,14 @@ Article Requirements:
 - Integrate quotes naturally into the discussion
 - Maintain clear flow between concepts
 
-The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.`,
+The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.
+
+Format your response in clear markdown with proper headings:
+- Use # for main headings
+- Use ## for subheadings
+- Use ### for sub-subheadings
+- Use proper markdown for lists, quotes, and emphasis
+- Structure the content hierarchically with clear sections`,
     outputType: "article",
   },
   {
@@ -125,7 +132,14 @@ Article Requirements:
 
 The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.
 
-IMPORTANT: Each response must contain the entire article from start to finish. When suggesting improvements or refinements to specific sections, still output the complete article with those changes incorporated.`,
+IMPORTANT: Each response must contain the entire article from start to finish. When suggesting improvements or refinements to specific sections, still output the complete article with those changes incorporated.
+
+Format your response in clear markdown with proper headings:
+- Use # for main headings
+- Use ## for subheadings
+- Use ### for sub-subheadings
+- Use proper markdown for lists, quotes, and emphasis
+- Structure the content hierarchically with clear sections`,
     outputType: "article",
   },
 ];

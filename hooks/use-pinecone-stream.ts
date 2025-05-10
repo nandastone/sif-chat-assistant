@@ -23,6 +23,7 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
       prompt?: string;
       basePrompt?: string;
       messages?: ChatMessage[];
+      includeSpiritSoulDraft?: boolean;
     },
     onData: (data: { content?: string; citations?: Citation[] }) => void
   ) => {
