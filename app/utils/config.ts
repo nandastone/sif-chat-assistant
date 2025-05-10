@@ -79,38 +79,8 @@ Structure each section to build understanding progressively. Focus on specific, 
     outputType: "research",
   },
   {
-    id: "article",
-    name: "Draft Article",
-    description: "Generate a complete article draft",
-    basePrompt: `Create an engaging article that presents these teachings clearly and naturally.
-
-Source Material Usage:
-- Writing style: Follow approach of documents marked Usage: "style_guide" (opening style, metaphors, progression of ideas)
-- Primary content: Use teachings, quotes, and examples from Jagad Guru Siddhaswarupananda
-- Supporting content: Where relevant, include teachings from Bhaktivedanta Swami that naturally reinforce the topic
-
-Article Requirements:
-- Open engagingly following style guide examples
-- Build understanding through direct quotes and teachings
-- Use real examples and analogies from the source materials
-- Include relevant Q&A exchanges that illuminate points
-- Show practical applications through specific examples
-- Integrate quotes naturally into the discussion
-- Maintain clear flow between concepts
-
-The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.
-
-Format your response in clear markdown with proper headings:
-- Use # for main headings
-- Use ## for subheadings
-- Use ### for sub-subheadings
-- Use proper markdown for lists, quotes, and emphasis
-- Structure the content hierarchically with clear sections`,
-    outputType: "article",
-  },
-  {
     id: "draft-article",
-    name: "Draft Article (Chat)",
+    name: "Draft Article",
     description: "Generate and refine article drafts through chat",
     basePrompt: `Always generate the COMPLETE article in each response, even when suggesting improvements to specific sections. Never output just a section or partial update.
 
@@ -140,6 +110,40 @@ Format your response in clear markdown with proper headings:
 - Use ### for sub-subheadings
 - Use proper markdown for lists, quotes, and emphasis
 - Structure the content hierarchically with clear sections`,
+    outputType: "article",
+  },
+  {
+    id: "course-outline",
+    name: "Course Outline Generator",
+    description: "Generate course outlines and extract relevant content",
+    basePrompt: `You are a curriculum designer and subject matter expert in spiritual teachings. Your goal is to create a clear, progressive outline for a course on a specific spiritual topic, based on core themes and principles found in the materials.
+
+Source Material Usage:
+- Primary focus: Use teachings from Jagad Guru Siddhaswarupananda
+- Supporting content: Include relevant teachings from Bhaktivedanta Swami that naturally support the topic
+- Writing style: Follow approach of documents marked Usage: "style_guide" for engaging presentation
+
+Course Structure Requirements:
+1. Create a clear, progressive outline with logical module progression
+2. Each module must include:
+   - Clear title
+   - Brief description
+   - Specific learning goals
+   - Selected excerpts (minimum 300 words each) that:
+     * Explain core ideas with clarity
+     * Convey depth, wisdom, or practical application
+     * Are inspiring, memorable, or insightful
+   - Reflection prompts or discussion questions
+
+Format Requirements:
+- Use clear markdown formatting
+- Include proper headings and subheadings
+- Format quotes using markdown quote syntax (>) with citations
+- Structure content hierarchically with clear sections
+
+IMPORTANT: Each response must contain the complete course outline from start to finish. When suggesting improvements or refinements to specific sections, still output the complete outline with those changes incorporated.
+
+The outline should be comprehensive and practical, with each module building upon previous ones to create a cohesive learning journey.`,
     outputType: "article",
   },
 ];

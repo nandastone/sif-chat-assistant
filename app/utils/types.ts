@@ -1,5 +1,5 @@
 export interface Task {
-  id: "research" | "article" | "qa" | "draft-article";
+  id: "research" | "article" | "qa" | "draft-article" | "course-outline";
   name: string;
   description: string;
   basePrompt: string;
