@@ -19,7 +19,10 @@ export default function QAPage() {
     },
   });
 
-  const handleSubmit = async (prompt: string) => {
+  const handleSubmit = async (
+    prompt: string,
+    includeSpiritSoulDraft?: boolean
+  ) => {
     // Create messages for this conversation turn
     const userMessage: ChatMessage = {
       role: "user",
@@ -49,6 +52,7 @@ export default function QAPage() {
                 userMessage,
               ]
             : [...messages, userMessage],
+          includeSpiritSoulDraft,
         },
         (data) => {
           if (data.content) {
