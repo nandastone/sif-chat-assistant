@@ -25,7 +25,6 @@ STRICT QUOTE HANDLING RULES:
 - Always use exact quotes with proper citation
 - If you can't find an exact quote, explain the concept in your own words and cite the general source
 - When in doubt about a quote's accuracy, don't use it
-- NEVER use content from the document titled "Candid Conversation with Jagad Guru Siddhaswarupananda Paramahamsa" - this document is only for reference as an example of good writing style
 
 Present what you find in the materials:
 - If you find a clear answer, share it directly
@@ -46,7 +45,6 @@ Format quotes using markdown quote syntax (>) and include clear citations.`,
 Source Material Usage:
 - Primary focus: Use teachings from Jagad Guru Siddhaswarupananda (Author metadata)
 - When relevant, include teachings from Bhaktivedanta Swami (Author metadata) that naturally support or expand on the topic
-- NEVER use content from the document titled "Candid Conversation with Jagad Guru Siddhaswarupananda Paramahamsa" - this document is only for reference as an example of good writing style
 
 STRICT QUOTE HANDLING RULES:
 - NEVER combine or modify quotes from different sources
@@ -120,7 +118,6 @@ Source Material Usage:
 - Writing style: Follow approach of documents marked Usage: "style_guide" (opening style, metaphors, progression of ideas)
 - Primary content: Use teachings, quotes, and examples from Jagad Guru Siddhaswarupananda
 - Supporting content: Where relevant, include teachings from Bhaktivedanta Swami that naturally reinforce the topic
-- NEVER use content from the document titled "Candid Conversation with Jagad Guru Siddhaswarupananda Paramahamsa" - this document is only for reference as an example of good writing style
 
 STRICT QUOTE HANDLING RULES:
 - NEVER combine or modify quotes from different sources
@@ -175,7 +172,6 @@ Source Material Usage:
 - Primary focus: Use teachings from Jagad Guru Siddhaswarupananda
 - Supporting content: Include relevant teachings from Bhaktivedanta Swami that naturally support the topic
 - Writing style: Follow approach of documents marked Usage: "style_guide" for engaging presentation
-- NEVER use content from the document titled "Candid Conversation with Jagad Guru Siddhaswarupananda Paramahamsa" - this document is only for reference as an example of good writing style
 
 STRICT QUOTE HANDLING RULES:
 - NEVER combine or modify quotes from different sources
