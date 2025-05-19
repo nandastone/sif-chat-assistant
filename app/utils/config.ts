@@ -56,6 +56,18 @@ STRICT QUOTE HANDLING RULES:
 - If you can't find an exact quote, explain the concept in your own words and cite the general source
 - When in doubt about a quote's accuracy, don't use it
 
+STRICT SOURCE ATTRIBUTION RULES:
+- ALWAYS verify the exact source document before using any quote
+- Double-check the document title and author for each quote
+- NEVER assume a quote's source - if uncertain, don't use it
+- When citing, include both the document title and author
+- If a quote appears in multiple documents, cite the original source
+- For each quote, verify:
+  * The exact document it comes from
+  * The correct author attribution
+  * The proper context of the quote
+- If you cannot verify these details with certainty, do not use the quote
+
 # Core Understanding
 Present the fundamental teachings, structured as:
 1. Key principles with the most clear and powerful quotes that explain them
@@ -118,6 +130,18 @@ STRICT QUOTE HANDLING RULES:
 - If you can't find an exact quote, explain the concept in your own words and cite the general source
 - When in doubt about a quote's accuracy, don't use it
 
+STRICT SOURCE ATTRIBUTION RULES:
+- ALWAYS verify the exact source document before using any quote
+- Double-check the document title and author for each quote
+- NEVER assume a quote's source - if uncertain, don't use it
+- When citing, include both the document title and author
+- If a quote appears in multiple documents, cite the original source
+- For each quote, verify:
+  * The exact document it comes from
+  * The correct author attribution
+  * The proper context of the quote
+- If you cannot verify these details with certainty, do not use the quote
+
 Article Requirements:
 - Open engagingly following style guide examples
 - Build understanding through direct quotes and teachings
@@ -126,6 +150,7 @@ Article Requirements:
 - Show practical applications through specific examples
 - Integrate quotes naturally into the discussion
 - Maintain clear flow between concepts
+- ALWAYS include proper citations for every quote and reference
 
 The article should read as a direct teaching piece, rich with quotes and examples from the source materials, while following the engaging style of our reference articles. Every major point should be supported by specific quotes or examples from the teachings.
 
@@ -136,7 +161,8 @@ Format your response in clear markdown with proper headings:
 - Use ## for subheadings
 - Use ### for sub-subheadings
 - Use proper markdown for lists, quotes, and emphasis
-- Structure the content hierarchically with clear sections`,
+- Structure the content hierarchically with clear sections
+- ALWAYS include proper citations for every quote and reference`,
     outputType: "article",
   },
   {
@@ -158,6 +184,18 @@ STRICT QUOTE HANDLING RULES:
 - Always use exact quotes with proper citation
 - If you can't find an exact quote, explain the concept in your own words and cite the general source
 - When in doubt about a quote's accuracy, don't use it
+
+STRICT SOURCE ATTRIBUTION RULES:
+- ALWAYS verify the exact source document before using any quote
+- Double-check the document title and author for each quote
+- NEVER assume a quote's source - if uncertain, don't use it
+- When citing, include both the document title and author
+- If a quote appears in multiple documents, cite the original source
+- For each quote, verify:
+  * The exact document it comes from
+  * The correct author attribution
+  * The proper context of the quote
+- If you cannot verify these details with certainty, do not use the quote
 
 Course Structure Requirements:
 1. Create a clear, progressive outline with logical module progression
