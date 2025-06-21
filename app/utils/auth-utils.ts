@@ -4,6 +4,43 @@ import { auth0 } from "../../lib/auth0";
 const REQUIRED_MEMBERSHIP = "SIF AI Assistant";
 
 /**
+ * Decode JWT token to get claims.
+ */
+export function decodeJWT(token: string): any {
+  try {
+    const tokenParts = token.split(".");
+    if (tokenParts.length === 3) {
+      const payload = JSON.parse(
+        Buffer.from(tokenParts[1], "base64").toString()
+      );
+      return payload;
+    }
+  } catch (e) {
+    console.error("Error decoding JWT:", e);
+  }
+  return undefined;
+}
+
+/**
+ * Enrich session with app_metadata from ID token.
+ */
+export function enrichSessionWithAppMetadata(session: SessionData): void {
+  const idToken = session.tokenSet?.idToken;
+
+  if (idToken) {
+    const idTokenPayload = decodeJWT(idToken);
+
+    if (idTokenPayload) {
+      const appMetadata = idTokenPayload["https://atma-id.com/app_metadata"];
+
+      if (appMetadata) {
+        session.user.app_metadata = appMetadata;
+      }
+    }
+  }
+}
+
+/**
  * Get Auth0 session and verify membership for API routes.
  *
  * @returns The session and user objects if the user has the required membership, undefined otherwise.
@@ -17,6 +54,9 @@ export async function getAuth0SessionAndVerifyMembership(): Promise<
     if (!session) {
       return undefined;
     }
+
+    // Enrich session with app_metadata from token.
+    enrichSessionWithAppMetadata(session);
 
     if (!hasRequiredMembership(session.user)) {
       return undefined;
@@ -36,14 +76,12 @@ export async function getAuth0SessionAndVerifyMembership(): Promise<
  * @returns True if the user has the required membership, false otherwise.
  */
 export function hasRequiredMembership(user: User): boolean {
-  console.log("user", user);
-  if (!user?.app_metadata?.memberships) {
+  const appMetadata = user.app_metadata;
+  if (!appMetadata?.memberships) {
     return false;
   }
 
-  console.log("user.app_metadata.memberships", user.app_metadata.memberships);
-
-  return user.app_metadata.memberships.includes(REQUIRED_MEMBERSHIP);
+  return appMetadata.memberships.includes(REQUIRED_MEMBERSHIP);
 }
 
 type AuthResult = {

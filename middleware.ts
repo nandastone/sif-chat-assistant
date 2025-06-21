@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth0 } from "./lib/auth0";
-import { hasRequiredMembership } from "./app/utils/auth-utils";
+import {
+  enrichSessionWithAppMetadata,
+  hasRequiredMembership,
+} from "./app/utils/auth-utils";
 
 export async function middleware(request: NextRequest) {
   const authRes = await auth0.middleware(request);
@@ -17,6 +20,9 @@ export async function middleware(request: NextRequest) {
     // User does not have a session — redirect to login.
     return NextResponse.redirect(`${origin}/auth/login`);
   }
+
+  // Enrich session with app_metadata from token.
+  enrichSessionWithAppMetadata(session);
 
   if (!hasRequiredMembership(session.user)) {
     // User doesn't have the required membership — redirect to logout to clear session.

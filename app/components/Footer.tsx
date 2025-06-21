@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer>
       <div className="container mx-auto p-4 py-6 max-w-4xl">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
             <p>
