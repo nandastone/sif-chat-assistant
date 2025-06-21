@@ -1,20 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth0 } from "./lib/auth0";
+import { hasRequiredMembership } from "./app/utils/auth-utils";
 
 export async function middleware(request: NextRequest) {
   const authRes = await auth0.middleware(request);
 
-  // Authentication routes — let the middleware handle it.
   if (request.nextUrl.pathname.startsWith("/auth")) {
+    // Authentication routes — let the middleware handle it.
     return authRes;
   }
 
   const { origin } = new URL(request.url);
   const session = await auth0.getSession();
 
-  // User does not have a session — redirect to login.
   if (!session) {
+    // User does not have a session — redirect to login.
     return NextResponse.redirect(`${origin}/auth/login`);
+  }
+
+  if (!hasRequiredMembership(session.user)) {
+    // User doesn't have the required membership — redirect to logout to clear session.
+    return NextResponse.redirect(`${origin}/auth/logout`);
   }
 
   return authRes;

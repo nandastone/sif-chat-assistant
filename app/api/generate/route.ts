@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { ChatMessage } from "../../utils/types";
 import { checkAssistantPrerequisites } from "../../utils/assistant-utils";
-import { verifyAuth } from "../../utils/auth-utils";
+import { getAuth0SessionAndVerifyMembership } from "../../utils/auth-utils";
 import { shouldEnforceAuth } from "../../utils/config";
 import * as Sentry from "@sentry/nextjs";
 
@@ -16,8 +16,8 @@ const reportError = (error: unknown, context?: Record<string, unknown>) => {
 export async function POST(request: Request) {
   try {
     if (shouldEnforceAuth) {
-      const authHeader = request.headers.get("authorization");
-      if (!verifyAuth(authHeader)) {
+      const authResult = await getAuth0SessionAndVerifyMembership();
+      if (!authResult) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
     }

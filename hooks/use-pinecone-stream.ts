@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ChatMessage, Citation } from "../app/utils/types";
-import { getAuthHeader } from "../app/utils/auth-utils";
 import * as Sentry from "@sentry/nextjs";
 import { API_ENDPOINTS } from "../app/utils/config";
 
@@ -57,18 +56,11 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
     try {
       timeoutId = setTimeout(checkTimeout, 1000);
 
-      const authHeader = await getAuthHeader();
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (authHeader) {
-        headers.Authorization = authHeader;
-      }
-
       const response = await fetch(API_ENDPOINTS.generate, {
         method: "POST",
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(requestData),
       });
 
@@ -144,7 +136,7 @@ export function usePineconeStream(options: UsePineconeStreamOptions = {}) {
                   },
                 })),
               };
-              onData({ citations: [citation] });
+              onData({ citations: [citation] as any });
             }
           } catch (e) {
             console.error("Error parsing chunk:", e);
