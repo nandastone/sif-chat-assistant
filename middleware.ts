@@ -2,6 +2,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { auth0 } from "./lib/auth0";
 
 export async function middleware(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Intercept failed auth callback and redirect to logout to clear the session.
+  if (pathname === "/auth/callback" && searchParams.has("error")) {
+    const logoutUrl = new URL("/auth/logout", request.url);
+    return NextResponse.redirect(logoutUrl);
+  }
+
   const authRes = await auth0.middleware(request);
 
   if (request.nextUrl.pathname.startsWith("/auth")) {
