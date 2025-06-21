@@ -1,22 +1,18 @@
 import { NextResponse } from "next/server";
 import type { ChatMessage } from "../../utils/types";
 import { checkAssistantPrerequisites } from "../../utils/assistant-utils";
-import { getAuth0SessionAndVerifyMembership } from "../../utils/auth-utils";
+import { getAuth0Session } from "../../utils/auth-utils";
 import { shouldEnforceAuth } from "../../utils/config";
 import * as Sentry from "@sentry/nextjs";
 
 // https://vercel.com/docs/functions/configuring-functions/duration#node.js-next.js-%3E=-13.5-or-higher-sveltekit-astro-nuxt-and-remix
 export const maxDuration = 60;
 
-const reportError = (error: unknown, context?: Record<string, unknown>) => {
-  console.error("Error generating response:", error);
-  Sentry.captureException(error, { extra: context });
-};
-
 export async function POST(request: Request) {
   try {
     if (shouldEnforceAuth) {
-      const authResult = await getAuth0SessionAndVerifyMembership();
+      const authResult = await getAuth0Session();
+
       if (!authResult) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
@@ -114,3 +110,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
+
+const reportError = (error: unknown, context?: Record<string, unknown>) => {
+  console.error("Error generating response:", error);
+  Sentry.captureException(error, { extra: context });
+};

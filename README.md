@@ -22,15 +22,28 @@ A Next.js application that provides a streamlined interface for AI-powered resea
   - Custom React components
 - **State Management**: Zustand
 - **AI Integration**: Pinecone
+- **Authentication**: Auth0
 - **Form Handling**: React Hook Form + Zod
 - **Date Handling**: date-fns
 - **Markdown Support**: react-markdown
 - **Theme**: next-themes
 
+## Authentication
+
+This application uses Auth0 for authentication and access control:
+
+- **Login**: Users authenticate through Auth0's hosted login page
+- **Membership Validation**: Access is controlled via Auth0 app metadata memberships
+- **Global Protection**: All routes and API endpoints are protected by middleware
+- **Session Management**: Auth0 handles session persistence and token refresh
+
+Users must have the appropriate membership in their Auth0 profile to access the application.
+
 ## Prerequisites
 
 - Node.js 18+ or Bun runtime
 - Pinecone API key
+- Auth0 application configured
 - Environment variables setup (see below)
 
 ## Getting Started
@@ -47,7 +60,11 @@ A Next.js application that provides a streamlined interface for AI-powered resea
    ```
    PINECONE_API_KEY=your_api_key
    PINECONE_ASSISTANT_NAME=your_assistant_name
-   AUTH_SECRET=your_secure_secret
+   AUTH0_SECRET=your_auth0_secret
+   AUTH0_BASE_URL=http://localhost:3000
+   AUTH0_ISSUER_BASE_URL=https://your-domain.auth0.com
+   AUTH0_CLIENT_ID=your_auth0_client_id
+   AUTH0_CLIENT_SECRET=your_auth0_client_secret
    ```
 
 4. Run the development server:
@@ -72,7 +89,7 @@ A Next.js application that provides a streamlined interface for AI-powered resea
 - `POST /api/generate` - Generate research assistance responses
   - Supports streaming responses with Server-Sent Events (SSE)
   - 60-second timeout for long-running requests
-  - Requires authentication via Authorization header
+  - Requires authentication via Auth0 session
   - Request body:
     ```json
     {
