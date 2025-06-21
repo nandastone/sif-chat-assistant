@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { ChatMessage } from "./types";
-import { StateCreator } from "zustand";
 
 interface ChatState {
   messages: ChatMessage[];

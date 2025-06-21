@@ -1,36 +1,33 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { shouldEnforceAuth } from "./app/utils/config";
+import { NextResponse, type NextRequest } from "next/server";
+import { auth0 } from "./lib/auth0";
 
-export function middleware(request: NextRequest) {
-  if (!shouldEnforceAuth) {
-    return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  const authRes = await auth0.middleware(request);
+
+  if (request.nextUrl.pathname.startsWith("/auth")) {
+    // Authentication routes — let the middleware handle it.
+    return authRes;
   }
 
-  const basicAuth = request.headers.get("authorization");
+  const { origin } = new URL(request.url);
+  const session = await auth0.getSession();
 
-  if (basicAuth) {
-    try {
-      const token = basicAuth.split(" ")[1];
-      const decoded = Buffer.from(token, "base64").toString();
-      const [, password] = decoded.split(":");
-
-      if (password === process.env.AUTH_SECRET) {
-        return NextResponse.next();
-      }
-    } catch {
-      // Invalid auth header format
-    }
+  if (!session) {
+    // User does not have a session — redirect to login.
+    return NextResponse.redirect(`${origin}/auth/login`);
   }
 
-  return new NextResponse("Authentication required", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="Secure Area"',
-    },
-  });
+  return authRes;
 }
 
 export const config = {
-  matcher: "/((?!_next/static|favicon.ico).*)",
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+  ],
 };
